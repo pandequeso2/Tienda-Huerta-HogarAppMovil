@@ -1,17 +1,26 @@
+// data/repository/ProductoRepository.kt
 package com.example.tiendahuertohogar.data.repository
 
-import com.example.tiendahuertohogar.data.dao.ProductoDao
+import com.example.tiendahuertohogar.data.dao.ProductoDAO
 import com.example.tiendahuertohogar.data.model.Producto
 import kotlinx.coroutines.flow.Flow
 
-class ProductoRepository (private val productoDao: ProductoDao){
+class ProductoRepository(private val productoDAO: ProductoDAO) {
+    val allProductos: Flow<List<Producto>> = productoDAO.getAll()
 
-    suspend fun insertarProducto(producto: Producto){
-        productoDao.insertarProducto(producto)
+    suspend fun insert(producto: Producto) {
+        productoDAO.insert(producto)
     }
 
-    fun obtenerProductos(): Flow<List<Producto>> {
-        return productoDao.obtenerProductos()
+    suspend fun update(producto: Producto) {
+        productoDAO.update(producto)
     }
 
-}// fin class
+    suspend fun delete(producto: Producto) {
+        productoDAO.delete(producto)
+    }
+
+    fun findById(id: Long): Flow<Producto?> {
+        return productoDAO.findById(id)
+    }
+}

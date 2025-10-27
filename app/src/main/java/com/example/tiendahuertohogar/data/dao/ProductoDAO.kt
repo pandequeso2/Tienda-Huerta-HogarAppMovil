@@ -1,18 +1,24 @@
+// data/dao/ProductoDAO.kt
 package com.example.tiendahuertohogar.data.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
+import androidx.room.*
 import com.example.tiendahuertohogar.data.model.Producto
 import kotlinx.coroutines.flow.Flow
 
 @Dao
+interface ProductoDAO {
+    @Query("SELECT * FROM productos ORDER BY nombre ASC")
+    fun getAll(): Flow<List<Producto>>
 
-interface ProductoDao{
+    @Query("SELECT * FROM productos WHERE id = :id")
+    fun findById(id: Long): Flow<Producto?>
 
-    @Insert
-    suspend fun insertarProducto(producto: Producto)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(producto: Producto)
 
-    @Query("SELECT * FROM productos")
-    fun obtenerProductos(): Flow<List<Producto>>
+    @Update
+    suspend fun update(producto: Producto)
+
+    @Delete
+    suspend fun delete(producto: Producto)
 }

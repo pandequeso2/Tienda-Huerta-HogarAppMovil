@@ -1,224 +1,80 @@
-package com.example.tiendahuertohogar.view
+// ui/view/ProductoFormScreen.kt
+package com.example.tiendahuertohogar.ui.view
 
-import android.R
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-
-import androidx.compose.foundation.lazy.items
-
-import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.*
+import androidx.compose.runtime.* // Importa todo lo de runtime, incluyendo derivedStateOf, getValue, setValue
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.tiendahuertohogar.data.model.Producto
 import com.example.tiendahuertohogar.viewModel.ProductoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-
 fun ProductoFormScreen(
-    navController: NavController,
-    nombre:String,
-    precio:String
-){// Inicio
+    viewModel: ProductoViewModel = hiltViewModel(),
+    onSave: () -> Unit
+) {
+    var codigo by remember { mutableStateOf("") }
+    var nombre by remember { mutableStateOf("") }
+    var precio by remember { mutableStateOf("") }
+    var stock by remember { mutableStateOf("") }
+    var descripcion by remember { mutableStateOf("") }
+    var categoria by remember { mutableStateOf("") }
 
-    var cantidad by remember{ mutableStateOf(TextFieldValue("")) }
-    var direccion by remember{ mutableStateOf(TextFieldValue("")) }
+    val isFormValid by derivedStateOf {
+        codigo.isNotBlank() && nombre.isNotBlank() && precio.toDoubleOrNull() != null && stock.toIntOrNull() != null
+    }
 
+    Column(modifier = Modifier.padding(16.dp)) {
+        // ... (el resto del código es idéntico y correcto)
+        Text("Nuevo Producto", style = MaterialTheme.typography.headlineMedium)
+        Spacer(modifier = Modifier.height(16.dp))
 
+        OutlinedTextField(value = codigo, onValueChange = { codigo = it }, label = { Text("Código (ej: FR004)") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(value = nombre, onValueChange = { nombre = it }, label = { Text("Nombre del Producto") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(value = categoria, onValueChange = { categoria = it }, label = { Text("Categoría (ej: Frutas)") }, modifier = Modifier.fillMaxWidth())
+        OutlinedTextField(
+            value = precio,
+            onValueChange = { precio = it },
+            label = { Text("Precio por Kilo/Unidad") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.NumberDecimal),
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = stock,
+            onValueChange = { stock = it },
+            label = { Text("Stock disponible") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(value = descripcion, onValueChange = { descripcion = it }, label = { Text("Descripción") }, modifier = Modifier.fillMaxWidth())
 
-    // Conectar al ViewModel
-    val viewModel: ProductoViewModel = viewModel()
+        Spacer(modifier = Modifier.height(16.dp))
 
-// Observar directamente los productos
-
-    val productos: List<Producto> by viewModel.productos.collectAsState()
-
-
-    Scaffold (
-        bottomBar = {
-            BottomAppBar {
-                // Contenido Barra superior
-            } // fin Bootom App
-        }// fin bottom
-
-    ) // fin Scaffold
-
-    {// inicio inner
-            innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(16.dp)
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        )// fin Column
-        { // Inicio Contenido
-
-            Image(
-                painter= painterResource(id= android.R.drawable.ic_menu_gallery),
-                contentDescription = "Imagen Producto",
-                modifier=Modifier
-                    .height(150.dp)
-                    .fillMaxWidth()
-            )// fin Image
-
-            Spacer(modifier =Modifier.height(16.dp))
-
-            Text(text=nombre, style= MaterialTheme.typography.headlineSmall)
-            Text(text="Precio: $precio", style= MaterialTheme.typography.bodyLarge)
-
-            Spacer(modifier =Modifier.height(16.dp))
-
-
-            OutlinedTextField(
-                value=cantidad,
-                onValueChange = {cantidad = it},
-                //OutlinedTextField es un componente de entrada de texto
-                // se utiliza para permitir que el usuario ingrese un valor.
-
-                label ={Text("Cantidad")},
-                modifier = Modifier.fillMaxWidth()
-            ) // fin cantidad
-
-            OutlinedTextField(
-                value=direccion,
-                onValueChange = {direccion = it},
-                //OutlinedTextField es un componente de entrada de texto
-                // se utiliza para permitir que el usuario ingrese un valor.
-
-                label ={Text("Direccion")},
-                modifier = Modifier.fillMaxWidth()
-            ) // fin direccion
-
-
-
-            Spacer(modifier =Modifier.height(16.dp))
-
-            Button(
-                onClick = {
-                    val producto = Producto(
-                        nombre = nombre,
-                        precio = precio,
-                        cantidad =cantidad.text,
-                        direccion = direccion.text,
-
-                    )
-                    viewModel.guardarProducto(producto)
-
-                    // limpiar formulario despues de guardar
-                    cantidad = TextFieldValue("")
-                    direccion = TextFieldValue("")
-
-
-                },
-                enabled=cantidad.text.isNotBlank() && direccion.text.isNotBlank()
-            ) // fin Button
-            { // inicio texto
-                Text("Confirmar Pedido")
-
-
-            }// fin texto
-
-            Spacer(modifier =Modifier.height(16.dp))
-
-            Text("Pedidos Realizados: ", style =MaterialTheme.typography.headlineSmall    )
-
-
-            if (productos.isNotEmpty()) {
-
-                LazyColumn(modifier =Modifier.weight(1f)){
-
-                    items(productos) { producto ->
-                        Card(
-                            modifier =Modifier
-                                .fillMaxWidth()
-                                .padding(4.dp)
-                        )
-                        { // inicio contenido card
-
-                            Column(modifier =Modifier.padding(8.dp) ){
-
-                                Text(
-                                    text="${producto.nombre} - ${producto.precio} ",
-                                    style = MaterialTheme.typography.bodyLarge
-
-                                ) // fin text1
-
-                                Text(
-                                    text="Cantidad: ${producto.cantidad} ",
-                                    style = MaterialTheme.typography.bodyMedium
-
-                                ) // fin text2
-
-                                Text(
-                                    text="Direccion: ${producto.direccion} ",
-                                    style = MaterialTheme.typography.bodyMedium
-
-                                ) // fin text3
-
-
-                            } // fin Columna
-
-
-                        } // fin contenido card
-
-                    } // fin items
-
-                } // fin Lazy
-
-            } // fin if
-            else{
-                Text("No hat pedidos realizados",
-                    modifier = Modifier.weight(1f),
-                    style = MaterialTheme.typography.bodyMedium
-
+        Button(
+            onClick = {
+                val nuevoProducto = Producto(
+                    codigo = codigo,
+                    nombre = nombre,
+                    precio = precio.toDoubleOrNull() ?: 0.0,
+                    stock = stock.toIntOrNull() ?: 0,
+                    descripcion = descripcion,
+                    categoria = categoria,
+                    imagenUrl = ""
                 )
-            }
-
-
-        } //Fin Contenido
-
-    } // fin inner
-
-}//fin
-
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewProductoFormScreen() {
-    // Preview básico para testing
-    ProductoFormScreen(
-        navController = rememberNavController(),
-        nombre = "Producto Ejemplo",
-        precio = "$10.00"
-    )
+                viewModel.addProducto(nuevoProducto)
+                onSave()
+            },
+            enabled = isFormValid,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Guardar Producto")
+        }
+    }
 }

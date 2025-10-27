@@ -1,32 +1,27 @@
+// ui/login/LoginViewModel.kt
 package com.example.tiendahuertohogar.ui.login
 
 import androidx.lifecycle.ViewModel
-
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
+import com.example.tiendahuertohogar.data.model.Credential
 import com.example.tiendahuertohogar.data.repository.AuthRepository
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
 
-class LoginViewModel(
-    private val repo: AuthRepository = AuthRepository()
-) : ViewModel() {
+class LoginViewModel(private val authRepository: AuthRepository) : ViewModel() {
 
-    var uiState by mutableStateOf(LoginUiState())
-        private set
+    private val _uiState = MutableStateFlow(LoginUiState())
+    val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
-    fun onUsernameChange(value: String) {
-        uiState = uiState.copy(username = value, error = null)
-    }
-
-    fun onPasswordChange(value: String) {
-        uiState = uiState.copy(password = value, error = null)
-    }
-
-    fun submit(onSuccess: (String) -> Unit) {
-        uiState = uiState.copy(isLoading = true, error = null)
-        val ok = repo.login(uiState.username.trim(), uiState.password)
-        uiState = uiState.copy(isLoading = false)
-        if (ok) onSuccess(uiState.username.trim())
-        else uiState = uiState.copy(error = "Credenciales inválidas")
+    fun onLogin(email: String, pass: String) {
+        _uiState.update { it.copy(isLoading = true, error = null) }
+        viewModelScope.launch {
+            val success = authRepository.login(Credential(email, pass))
+            if (success) {
+                _uiState.update { it.copy(isLoading = false, loginSuccess = true) }
+            } else {
+                _uiState.update { it.copy(isLoading = false, error = "Credenciales incorrectas") }
+            }
+        }
     }
 }
