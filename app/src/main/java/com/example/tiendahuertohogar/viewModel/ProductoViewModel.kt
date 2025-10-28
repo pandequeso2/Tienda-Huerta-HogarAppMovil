@@ -1,23 +1,26 @@
 // viewModel/ProductoViewModel.kt
 package com.example.tiendahuertohogar.viewModel
 
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tiendahuertohogar.data.model.Producto
-import com.example.tiendahuertohogar.data.repository.ProductoRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
-@HiltViewModel
-class ProductoViewModel @Inject constructor(
-    private val productoRepository: ProductoRepository
-) : ViewModel() {
+class ProductoViewModel : ViewModel() {
+    private val _productos = MutableStateFlow<List<Producto>> (emptyList())
 
-    // La función que tu formulario necesita
-    fun addProducto(producto: Producto) {
-        viewModelScope.launch {
-            productoRepository.insert(producto)
+    val productos: StateFlow<List<Producto>> = _productos.asStateFlow()
+
+    fun guardarProducto(producto: Producto){
+        viewModelScope.launch{
+            val nuevaLista  = _productos.value +producto
+            _productos.value =nuevaLista
+
         }
-    }
-}
+    }// fin fun
+} // ViewModel
+

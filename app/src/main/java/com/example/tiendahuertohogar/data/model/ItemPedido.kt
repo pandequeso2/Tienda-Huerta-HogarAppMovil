@@ -11,14 +11,14 @@ import androidx.room.PrimaryKey
     foreignKeys = [
         ForeignKey(
             entity = Pedido::class,
-            // Asume que la PK en Pedido es 'idPedido'. ¡Verifica esto!
-            parentColumns = ["idPedido"],
+            // CORRECCIÓN: La clave primaria en Pedido se llama 'id'
+            parentColumns = ["id"],
             childColumns = ["pedido_id"],
             onDelete = ForeignKey.CASCADE // Si se borra un pedido, se borran sus items.
         ),
         ForeignKey(
             entity = Producto::class,
-            // Asume que la PK en Producto es 'id'. ¡Verifica esto!
+            // CORRECTO: La clave primaria en Producto se llama 'id'.
             parentColumns = ["id"],
             childColumns = ["producto_id"],
             onDelete = ForeignKey.RESTRICT // No permite borrar un producto si está en un pedido.
@@ -29,7 +29,6 @@ data class ItemPedido(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 
-    // Usar @ColumnInfo mejora la claridad y evita conflictos con nombres de variables.
     @ColumnInfo(name = "pedido_id", index = true)
     val pedidoId: Long,
 

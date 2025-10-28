@@ -5,20 +5,22 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tiendahuertohogar.data.model.Usuario
 import com.example.tiendahuertohogar.data.repository.UsuarioRepository
-import dagger.hilt.android.lifecycle.HiltViewModel
+// 1. Quitar las importaciones de Hilt
+// import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import javax.inject.Inject
+// import javax.inject.Inject
 
-// Clase para representar el estado de la UI
+// La clase para el estado de la UI (PerfilUiState) es perfecta y no necesita cambios.
 data class PerfilUiState(
     val usuario: Usuario? = null,
     val isLoading: Boolean = false,
-    val message: String? = null
+    val error: String? = null, // Renombré 'message' a 'error' para claridad en el estado de carga
+    val successMessage: String? = null // Añadí un campo específico para mensajes de éxito
 )
 
-@HiltViewModel
-class PerfilUsuarioViewModel @Inject constructor(
+// 2. Quitar las anotaciones @HiltViewModel y @Inject
+class PerfilUsuarioViewModel constructor(
     private val usuarioRepository: UsuarioRepository
 ) : ViewModel() {
 
@@ -29,24 +31,41 @@ class PerfilUsuarioViewModel @Inject constructor(
     fun cargarPerfil(usuarioId: Long) {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
-            usuarioRepository.getUsuario(usuarioId).collect { usuario ->
-                _uiState.update {
-                    it.copy(isLoading = false, usuario = usuario)
+            usuarioRepository.getUsuario(usuarioId)
+                .catch { exception ->
+                    // En caso de error en el flujo, actualizamos el estado
+                    _uiState.update {
+                        it.copy(isLoading = false, error = "Error al cargar el perfil: ${exception.message}")
+                    }
                 }
-            }
+                .collect { usuario ->
+                    // Cuando el flujo emite un usuario, actualizamos el estado
+                    _uiState.update {
+                        it.copy(isLoading = false, usuario = usuario)
+                    }
+                }
         }
     }
 
     // Actualiza los datos del usuario en la base de datos
     fun actualizarPerfil(usuario: Usuario) {
         viewModelScope.launch {
-            usuarioRepository.updateUsuario(usuario)
-            _uiState.update { it.copy(message = "Perfil actualizado con éxito") }
+            try {
+                usuarioRepository.updateUsuario(usuario)
+                _uiState.update { it.copy(successMessage = "Perfil actualizado con éxito") }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = "Error al actualizar el perfil: ${e.message}") }
+            }
         }
     }
 
-    // Limpia el mensaje para que no se muestre repetidamente
-    fun messageShown() {
-        _uiState.update { it.copy(message = null) }
+    // Limpia el mensaje de éxito para que no se muestre repetidamente (ej. en un Snackbar)
+    fun successMessageShown() {
+        _uiState.update { it.copy(successMessage = null) }
+    }
+
+    // Limpia el mensaje de error
+    fun errorMessageShown() {
+        _uiState.update { it.copy(error = null) }
     }
 }
