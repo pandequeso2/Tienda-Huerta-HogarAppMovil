@@ -1,5 +1,5 @@
 // Asegúrate de que el paquete sea el correcto para tu proyecto
-package com.example.tiendahuertohogar.ui.view
+package com.example.tiendahuertohogar.view
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -7,16 +7,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import com.example.tiendahuertohogar.data.model.Producto
 import com.example.tiendahuertohogar.viewModel.ProductoViewModel
 
@@ -24,25 +20,26 @@ import com.example.tiendahuertohogar.viewModel.ProductoViewModel
 @Composable
 fun ProductoFormScreen(
     navController: NavController,
-    // El viewModel se instancia aquí. No usamos Hilt.
-    viewModel: ProductoViewModel = viewModel()
+    nombre: String,
+    precio: String,
+    viewModel: ProductoViewModel = hiltViewModel()
 ) {
     // Estados para cada campo del formulario
     var codigo by remember { mutableStateOf("") }
-    var nombre by remember { mutableStateOf("") }
+    var nombreState by remember { mutableStateOf(nombre) }
     var descripcion by remember { mutableStateOf("") }
     var categoria by remember { mutableStateOf("") }
-    var precio by remember { mutableStateOf("") }
+    var precioState by remember { mutableStateOf(precio) }
     var stock by remember { mutableStateOf("") }
 
     // Estado para controlar si el formulario es válido
-    val isFormValid by remember(codigo, nombre, descripcion, categoria, precio, stock) {
+    val isFormValid by remember(codigo, nombreState, descripcion, categoria, precioState, stock) {
         derivedStateOf {
             codigo.isNotBlank() &&
-                    nombre.isNotBlank() &&
+                    nombreState.isNotBlank() &&
                     descripcion.isNotBlank() &&
                     categoria.isNotBlank() &&
-                    (precio.toDoubleOrNull() ?: 0.0) > 0.0 &&
+                    (precioState.toDoubleOrNull() ?: 0.0) > 0.0 &&
                     (stock.toIntOrNull() ?: -1) >= 0
         }
     }
@@ -77,8 +74,8 @@ fun ProductoFormScreen(
             )
 
             OutlinedTextField(
-                value = nombre,
-                onValueChange = { nombre = it },
+                value = nombreState,
+                onValueChange = { nombreState = it },
                 label = { Text("Nombre del Producto") },
                 modifier = Modifier.fillMaxWidth()
             )
@@ -101,8 +98,8 @@ fun ProductoFormScreen(
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 // ... (dentro de la Row)
                 OutlinedTextField(
-                    value = precio,
-                    onValueChange = { precio = it },
+                    value = precioState,
+                    onValueChange = { precioState = it },
                     label = { Text("Precio") },
                     modifier = Modifier.weight(1f),
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), // <-- LÍNEA CORREGIDA
@@ -125,11 +122,11 @@ fun ProductoFormScreen(
                     val nuevoProducto = Producto(
                         // el 'id' se autogenera, por eso no lo incluimos aquí
                         codigo = codigo,
-                        nombre = nombre,
+                        nombre = nombreState,
                         descripcion = descripcion,
                         categoria = categoria,
                         // Convertimos a Double y Int al guardar
-                        precio = precio.toDoubleOrNull() ?: 0.0,
+                        precio = precioState.toDoubleOrNull() ?: 0.0,
                         stock = stock.toIntOrNull() ?: 0,
                         imagenUrl = null // Puedes añadir lógica para la imagen más tarde
                     )

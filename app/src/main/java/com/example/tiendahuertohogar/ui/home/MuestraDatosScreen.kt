@@ -1,42 +1,42 @@
-// ui/home/MuestraDatosScreen.kt
-package com.example.tiendahuertohogar.ui.home
-
+// ... otras importaciones
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.*
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import com.example.tiendahuertohogar.data.model.Producto
 import com.example.tiendahuertohogar.viewModel.ProductoViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+// ...
+
 @Composable
 fun MuestraDatosScreen(
     viewModel: ProductoViewModel,
     onAddProducto: () -> Unit
 ) {
-    val uiState by viewModel.uiState.collectAsState()
+    // --- CAMBIO AQUÍ ---
+    // En lugar de `uiState`, obtén directamente la lista `productos`.
+    val listaDeProductos by viewModel.productos.collectAsState()
 
     Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("Productos HuertoHogar") })
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onAddProducto) {
-                Icon(Icons.Default.Add, contentDescription = "Añadir Producto")
-            }
-        }
+        // ... (el resto del Scaffold se queda igual)
     ) { paddingValues ->
-        LazyColumn(contentPadding = paddingValues) {
-            items(uiState.productos) { producto ->
+        LazyColumn(modifier = Modifier.padding(paddingValues)) {
+            // --- CAMBIO AQUÍ ---
+            // Usa la nueva variable `listaDeProductos`
+            items(listaDeProductos) { producto: Producto ->
                 ListItem(
-                    headlineText = { Text(producto.nombre) },
-                    supportingText = { Text("${producto.precio} CLP - Stock: ${producto.stock}") },
+                    headlineContent = { Text(producto.nombre) },
+                    supportingContent = { Text("${producto.precio} CLP - Stock: ${producto.stock}") },
                     trailingContent = { Text(producto.categoria) }
                 )
-                Divider()
+                HorizontalDivider()
             }
         }
     }
