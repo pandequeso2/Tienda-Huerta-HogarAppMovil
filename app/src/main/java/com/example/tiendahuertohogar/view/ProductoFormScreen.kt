@@ -11,7 +11,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+//import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.tiendahuertohogar.data.model.Producto
 import com.example.tiendahuertohogar.viewModel.ProductoViewModel
@@ -22,7 +23,7 @@ fun ProductoFormScreen(
     navController: NavController,
     nombre: String,
     precio: String,
-    viewModel: ProductoViewModel = hiltViewModel()
+    viewModel: ProductoViewModel = viewModel()
 ) {
     // Estados para cada campo del formulario
     var codigo by remember { mutableStateOf("") }

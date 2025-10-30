@@ -26,6 +26,7 @@ import com.example.tiendahuertohogar.view.PantallaPrincipal
 import com.example.tiendahuertohogar.view.ProductoFormScreen
 import com.example.tiendahuertohogar.view.QrScannerScreen
 import com.example.tiendahuertohogar.viewmodel.HistorialPedidosViewModel
+import com.example.tiendahuertohogar.ui.login.LoginViewModel
 import com.example.tiendahuertohogar.viewmodel.QrViewModel
 
 object AppRoutes {

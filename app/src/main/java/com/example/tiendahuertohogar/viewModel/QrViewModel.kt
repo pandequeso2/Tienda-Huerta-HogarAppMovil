@@ -1,9 +1,9 @@
 package com.example.tiendahuertohogar.viewModel
 
-import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
+//import androidx.lifecycle.ViewModel
 // Importa tu nuevo modelo de datos
 import com.example.tiendahuertohogar.data.model.QrData
+import com.example.tiendahuertohogar.ui.login.LoginViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
@@ -37,4 +37,6 @@ class QrViewModel : ViewModel() {
     fun clearResult() {
         _qrResult.value = null
     }
+    val loginViewModel: LoginViewModel = viewModel()
+
 }

@@ -15,7 +15,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+//import androidx.hilt.navigation.compose.hiltViewModel
+
 import androidx.navigation.NavController
 import com.example.tiendahuertohogar.data.model.Pedido
 import com.example.tiendahuertohogar.viewmodel.HistorialPedidosViewModel
@@ -30,7 +32,7 @@ import java.util.*
 fun HistorialPedidosScreen(
     navController: NavController,
     usuarioId: Long,
-    viewModel: HistorialPedidosViewModel = hiltViewModel()
+    viewModel: HistorialPedidosViewModel = viewModel()
 ) {
     LaunchedEffect(usuarioId) {
         viewModel.obtenerPedidosPorUsuario(usuarioId)
