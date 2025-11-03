@@ -3,7 +3,6 @@ package com.example.tiendahuertohogar.ui.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-// Importa tu repositorio si no lo has hecho
 import com.example.tiendahuertohogar.data.repository.AuthRepository
 import com.example.tiendahuertohogar.data.model.Credential // Importa Credential
 import kotlinx.coroutines.flow.MutableStateFlow

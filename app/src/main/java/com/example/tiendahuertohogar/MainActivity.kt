@@ -16,7 +16,6 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             TiendaHuertoHogarTheme {
-                // Esto ya está bien, AppNav usa viewModel() que no depende de Hilt.
                 AppNav()
             }
         }

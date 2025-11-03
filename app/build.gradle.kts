@@ -2,10 +2,6 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
-    // 1. PLUGIN DE HILT ELIMINADO
-    // id("com.google.dagger.hilt.android")
-    // 2. PLUGIN KAPT ELIMINADO (solo era necesario para Hilt y Room)
-    // Se mantiene para Room, así que lo dejamos.
     kotlin("kapt")
 }
 
@@ -67,7 +63,6 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
 
     // --- DEPENDENCIAS DE LIFECYCLE (PARA VIEWMODEL) ---
-    // Estas son las dependencias clave para el funcionamiento sin Hilt
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.2")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.2") // Para collectAsState
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2") // ¡IMPORTANTE! Para la función viewModel()
@@ -78,7 +73,6 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.7.7")
 
     // --- ROOM (BASE DE DATOS) ---
-    // Room sigue necesitando Kapt para el procesamiento de anotaciones
     val roomVersion = "2.6.1"
     implementation("androidx.room:room-runtime:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion")
@@ -103,12 +97,6 @@ dependencies {
 
     // --- DESUGARING (PARA COMPATIBILIDAD CON APIS DE JAVA 8+) ---
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
-
-    // 3. DEPENDENCIAS DE HILT ELIMINADAS
-    // implementation("com.google.dagger:hilt-android:2.51.1")
-    // kapt("com.google.dagger:hilt-compiler:2.51.1")
-    // implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
-
     // --- DEPENDENCIAS DE TEST ---
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

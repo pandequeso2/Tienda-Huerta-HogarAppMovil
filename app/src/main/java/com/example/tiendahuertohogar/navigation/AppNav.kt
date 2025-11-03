@@ -27,7 +27,7 @@ import com.example.tiendahuertohogar.view.ProductoFormScreen
 import com.example.tiendahuertohogar.view.QrScannerScreen
 import com.example.tiendahuertohogar.viewmodel.HistorialPedidosViewModel
 import com.example.tiendahuertohogar.ui.login.LoginViewModel
-import com.example.tiendahuertohogar.viewmodel.QrViewModel
+
 
 object AppRoutes {
     const val LOGIN = "login"
@@ -88,15 +88,15 @@ fun AppNav(
             ProductoFormScreen(navController = navController, nombre = nombre, precio = precio)
         }
 
-        composable(AppRoutes.QR_SCANNER) {
-            val qrViewModel: QrViewModel = viewModel()
-            QrScannerScreen(
-                navController = navController,
-                viewModel = qrViewModel,
-                hasCameraPermission = hasCameraPermission,
-                onRequestPermission = { requestPermissionLauncher.launch(Manifest.permission.CAMERA) }
-            )
-        }
+//        composable(AppRoutes.QR_SCANNER) {
+//            val qrViewModel: QrViewModel = viewModel()
+        //          QrScannerScreen(
+        //      navController = navController,
+        //      viewModel = qrViewModel,
+        //      hasCameraPermission = hasCameraPermission,
+        //      onRequestPermission = { requestPermissionLauncher.launch(Manifest.permission.CAMERA) }
+        //  )
+        //}
 
         composable(
             route = "${AppRoutes.HISTORIAL_PEDIDOS}/{usuarioId}",
