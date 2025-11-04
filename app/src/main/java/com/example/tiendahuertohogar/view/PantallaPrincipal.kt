@@ -1,311 +1,101 @@
 package com.example.tiendahuertohogar.view
 
-import android.app.Application
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
-import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Notifications
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.QrCodeScanner
-import androidx.compose.material.icons.filled.Receipt
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import com.example.tiendahuertohogar.navigation.AppRoutes
-import com.example.tiendahuertohogar.ui.theme.*
-import com.example.tiendahuertohogar.viewModel.EstadoViewModel
+// No necesitamos el viewModel factory aquí, PerfilUsuarioScreen lo maneja
+import androidx.navigation.NavHostController
+import com.example.tiendahuertohogar.navigation.PantallaInterna
 import kotlinx.coroutines.launch
 
-data class MenuOption(
-    val title: String,
-    val subtitle: String,
-    val icon: ImageVector,
-    val color: Color,
-    val route: String = ""
-)
+// Importa tus pantallas
+import com.example.tiendahuertohogar.view.PerfilUsuarioScreen
+import com.example.tiendahuertohogar.view.MapaTiendasScreen
+import com.example.tiendahuertohogar.view.InicioScreen
+import com.example.tiendahuertohogar.view.CatalogoScreen
+import com.example.tiendahuertohogar.view.BlogScreen
+import com.example.tiendahuertohogar.view.FidelizacionScreen
+// Ya no necesitamos importar el ViewModel aquí, lo quitamos
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PantallaPrincipal(
-    navController: NavController,
-    username: String
+    navController: NavHostController,
+    username: String // Este 'username' es el ID que viene como String
 ) {
-    // Obtener el contexto y crear el ViewModel con la Application
-    val context = LocalContext.current
-    val viewModel: EstadoViewModel = viewModel(
-        factory = androidx.lifecycle.viewmodel.compose.viewModel<EstadoViewModel>(
-            factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-                override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                    @Suppress("UNCHECKED_CAST")
-                    return EstadoViewModel(context.applicationContext as android.app.Application) as T
-                }
-            }
-        ).javaClass.kotlin.objectInstance as androidx.lifecycle.ViewModelProvider.Factory
-    )
+    var vistaActual by remember { mutableStateOf<PantallaInterna>(PantallaInterna.Inicio) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
 
-    val menuOptions = listOf(
-        MenuOption(
-            "Catálogo",
-            "Explora productos",
-            Icons.Default.ShoppingCart,
-            VerdeEsmeralda
-        ),
-        MenuOption(
-            "Escanear QR",
-            "Agrega productos",
-            Icons.Default.QrCodeScanner,
-            AmarilloMostaza,
-            AppRoutes.QR_SCANNER
-        ),
-        MenuOption(
-            "Mis Pedidos",
-            "Historial de compras",
-            Icons.Default.Receipt,
-            MarronClaro,
-            "${AppRoutes.HISTORIAL_PEDIDOS}/1"
-        ),
-        MenuOption(
-            "Mi Perfil",
-            "Datos personales",
-            Icons.Default.Person,
-            VerdeFrutas
-        ),
-        MenuOption(
-            "Ubicaciones",
-            "Nuestras tiendas",
-            Icons.Default.LocationOn,
-            AzulLacteos
-        ),
-        MenuOption(
-            "Favoritos",
-            "Productos guardados",
-            Icons.Default.Favorite,
-            RojoError
-        )
-    )
+    // --- CORRECCIÓN CLAVE ---
+    // Convertimos el 'username' (String) al 'usuarioId' (Long)
+    // que tu PerfilUsuarioScreen necesita.
+    val usuarioId = username.toLongOrNull() ?: 0L
 
     ModalNavigationDrawer(
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet(
-                drawerContainerColor = BlancoSuave
-            ) {
-                DrawerMenu(username = username, navController = navController)
-            }
+            DrawerMenu(
+                vistaActual = vistaActual,
+                onNavegarInterna = { nuevaVista ->
+                    vistaActual = nuevaVista
+                    scope.launch { drawerState.close() }
+                },
+                onNavegarExterna = { ruta ->
+                    scope.launch { drawerState.close() }
+                    navController.navigate(ruta)
+                },
+                username = username // El DrawerMenu lo sigue usando como String
+            )
         }
     ) {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = {
-                        Column {
-                            Text(
-                                "HuertoHogar",
-                                style = MaterialTheme.typography.titleLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = BlancoNieve
-                            )
-                            Text(
-                                "¡Hola, $username!",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = BlancoNieve.copy(alpha = 0.8f)
-                            )
-                        }
-                    },
+                    title = { Text(vistaActual.titulo) },
                     navigationIcon = {
-                        IconButton(onClick = { scope.launch { drawerState.open() } }) {
-                            Icon(
-                                Icons.Default.Menu,
-                                contentDescription = "Menú",
-                                tint = BlancoNieve
-                            )
+                        IconButton(onClick = {
+                            scope.launch { drawerState.open() }
+                        }) {
+                            Icon(Icons.Default.Menu, contentDescription = "Abrir menú")
                         }
                     },
                     actions = {
-                        IconButton(onClick = { /* TODO: Notificaciones */ }) {
-                            Badge(
-                                containerColor = AmarilloMostaza
-                            ) {
-                                Text("3")
-                            }
-                            Icon(
-                                Icons.Default.Notifications,
-                                contentDescription = "Notificaciones",
-                                tint = BlancoNieve
-                            )
+                        IconButton(onClick = { /* TODO: Navegar al carrito */ }) {
+                            Icon(Icons.Default.ShoppingCart, contentDescription = "Carrito")
                         }
-                    },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = VerdeEsmeralda
-                    )
-                )
-            },
-            containerColor = BlancoSuave
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                // Banner superior
-                BannerPromocional()
-
-                // Grid de opciones
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    contentPadding = PaddingValues(16.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(menuOptions.size) { index ->
-                        val option = menuOptions[index]
-                        MenuCard(
-                            option = option,
-                            onClick = {
-                                if (option.route.isNotEmpty()) {
-                                    navController.navigate(option.route)
-                                }
-                            }
-                        )
                     }
+                )
+            }
+        ) { paddingValues ->
+
+            Surface(
+                modifier = Modifier.padding(paddingValues).fillMaxSize(),
+                color = Color(0xFFF7F7F7)
+            ) {
+                // --- BLOQUE 'WHEN' CORREGIDO ---
+                when (vistaActual) {
+                    is PantallaInterna.Inicio -> InicioScreen(username, navController)
+                    is PantallaInterna.Catalogo -> CatalogoScreen(navController)
+                    is PantallaInterna.Blog -> BlogScreen()
+                    is PantallaInterna.Fidelizacion -> FidelizacionScreen()
+
+                    // --- Pantallas que YA tenías (CORREGIDAS) ---
+
+                    // 1. Pásale el 'usuarioId' (Long)
+                    is PantallaInterna.Perfil -> PerfilUsuarioScreen(usuarioId = usuarioId)
+
+                    // 2. Asumimos que MapaTiendasScreen también espera el navController
+                    //    Si también da error, prueba quitándole el navController: MapaTiendasScreen()
+                    is PantallaInterna.Nosotros -> MapaTiendasScreen()
                 }
             }
-        }
-    }
-}
-
-@Composable
-fun BannerPromocional() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-            .height(140.dp)
-            .shadow(4.dp, shape = RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.Transparent
-        )
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            VerdeEsmeralda,
-                            VerdeEsmeraldaClaro
-                        )
-                    )
-                )
-                .padding(20.dp)
-        ) {
-            Column(
-                modifier = Modifier.align(Alignment.CenterStart)
-            ) {
-                Text(
-                    "🌱 Productos Frescos",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = BlancoNieve,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    "Del campo a tu mesa\ncon la mejor calidad",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = BlancoNieve.copy(alpha = 0.9f)
-                )
-            }
-
-            Text(
-                "🥑",
-                style = MaterialTheme.typography.displayLarge,
-                fontSize = 80.sp,
-                modifier = Modifier
-                    .align(Alignment.CenterEnd)
-                    .offset(x = 10.dp)
-            )
-        }
-    }
-}
-
-@Composable
-fun MenuCard(
-    option: MenuOption,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .aspectRatio(1f)
-            .shadow(2.dp, shape = RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = BlancoNieve
-        ),
-        onClick = onClick
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Surface(
-                modifier = Modifier
-                    .size(64.dp),
-                shape = RoundedCornerShape(32.dp),
-                color = option.color.copy(alpha = 0.15f)
-            ) {
-                Icon(
-                    imageVector = option.icon,
-                    contentDescription = option.title,
-                    modifier = Modifier.padding(16.dp),
-                    tint = option.color
-                )
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Text(
-                text = option.title,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
-                color = GrisOscuro
-            )
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Text(
-                text = option.subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = GrisMedio
-            )
         }
     }
 }
