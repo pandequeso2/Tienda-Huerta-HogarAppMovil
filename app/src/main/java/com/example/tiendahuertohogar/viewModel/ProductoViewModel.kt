@@ -1,26 +1,54 @@
-// viewModel/ProductoViewModel.kt
-package com.example.tiendahuertohogar.viewModel
-
+package com.example.tiendahuertohogar.viewmodel
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.tiendahuertohogar.data.model.Producto
+import com.example.tiendahuertohogar.data.repository.ProductoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-class ProductoViewModel : ViewModel() {
-    private val _productos = MutableStateFlow<List<Producto>> (emptyList())
+// --- 1. Estado de la UI ---
+data class CatalogoUiState(
+    val productos: List<Producto> = emptyList(),
+    val isLoading: Boolean = true // Empezamos cargando
+)
 
-    val productos: StateFlow<List<Producto>> = _productos.asStateFlow()
+// --- 2. El ViewModel ---
+class ProductoViewModel(private val repository: ProductoRepository) : ViewModel() {
 
-    fun guardarProducto(producto: Producto){
-        viewModelScope.launch{
-            val nuevaLista  = _productos.value +producto
-            _productos.value =nuevaLista
+    private val _uiState = MutableStateFlow(CatalogoUiState())
+    val uiState: StateFlow<CatalogoUiState> = _uiState.asStateFlow()
 
+    init {
+        // Observamos el Flow de la base de datos.
+        // Usamos 'repository.allProductos' que tú mismo definiste.
+        viewModelScope.launch {
+            repository.allProductos.collect { listaProductos ->
+                _uiState.value = CatalogoUiState(
+                    productos = listaProductos,
+                    isLoading = false
+                )
+            }
         }
-    }// fin fun
-} // ViewModel
+    }
 
+    // Aquí puedes añadir más funciones si las necesitas (insert, delete, etc.)
+}
+
+// --- 3. La Factory ---
+// (Probablemente ya tienes una, pero así debería ser)
+class ProductoViewModelFactory(
+    private val repository: ProductoRepository
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(ProductoViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return ProductoViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
+    }
+}

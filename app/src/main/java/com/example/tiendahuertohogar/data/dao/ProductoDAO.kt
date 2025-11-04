@@ -1,4 +1,3 @@
-// data/dao/ProductoDAO.kt
 package com.example.tiendahuertohogar.data.dao
 
 import androidx.room.*
@@ -16,9 +15,17 @@ interface ProductoDAO {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(producto: Producto)
 
+    // con el mismo 'codigo' (índice único) existe, se reemplace.
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(productos: List<Producto>)
+
     @Update
     suspend fun update(producto: Producto)
 
     @Delete
     suspend fun delete(producto: Producto)
+
+
+    @Query("DELETE FROM productos")
+    suspend fun deleteAll()
 }
