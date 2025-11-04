@@ -1,5 +1,6 @@
 package com.example.tiendahuertohogar.view
 
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -20,29 +21,55 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalContext // 1. Importar Context
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.viewmodel.compose.viewModel // 2. Importar viewModel
 import androidx.navigation.NavController
+import com.example.tiendahuertohogar.data.database.ProductoDatabase // 3. Importar BD
 import com.example.tiendahuertohogar.data.model.Producto
+import com.example.tiendahuertohogar.data.repository.ProductoRepository // 4. Importar Repo
 import com.example.tiendahuertohogar.ui.theme.*
-import com.example.tiendahuertohogar.viewModel.ProductoViewModel
+import com.example.tiendahuertohogar.viewmodel.ProductoViewModel
+import com.example.tiendahuertohogar.viewmodel.ProductoViewModelFactory // 5. Importar Factory
+import kotlinx.coroutines.launch // 6. Importar launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoFormScreen(
     navController: NavController,
     nombre: String,
-    precio: String,
-    viewModel: ProductoViewModel = viewModel()
+    precio: String
+    // 7. Quitamos el ViewModel de los parámetros
 ) {
+    // --- 8. AÑADIMOS EL BLOQUE DE INSTANCIACIÓN ---
+    val context = LocalContext.current.applicationContext
+    val scope = rememberCoroutineScope() // Necesario para la BD y el launch
+
+    val database = ProductoDatabase.getDatabase(context, scope)
+    val productoRepository = ProductoRepository(database.productoDao())
+    val productoViewModelFactory = ProductoViewModelFactory(productoRepository)
+
+    // Instanciamos el ViewModel aquí mismo
+    val viewModel: ProductoViewModel = viewModel(factory = productoViewModelFactory)
+    // --- FIN DEL BLOQUE ---
+
+
     // Estados para cada campo del formulario
     var codigo by remember { mutableStateOf("") }
     var nombreState by remember { mutableStateOf(nombre) }
     var descripcion by remember { mutableStateOf("") }
     var categoriaSeleccionada by remember { mutableStateOf("") }
-    var precioState by remember { mutableStateOf(precio) }
+
+    // Corregimos la lógica del precio para manejar el "$" y "CLP"
+    val precioLimpio = precio
+        .replace("$", "")
+        .replace("CLP", "")
+        .replace(".", "") // Quita separador de miles si existe
+        .trim()
+    var precioState by remember { mutableStateOf(precioLimpio) }
+
     var stock by remember { mutableStateOf("") }
     var showCategoryMenu by remember { mutableStateOf(false) }
     var showSuccessDialog by remember { mutableStateOf(false) }
@@ -71,7 +98,8 @@ fun ProductoFormScreen(
             TopAppBar(
                 title = {
                     Text(
-                        "Nuevo Producto",
+                        // Título dinámico: si el nombre no está vacío, es "Editar"
+                        if (nombre.isNotBlank()) "Editar Producto" else "Nuevo Producto",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -122,7 +150,8 @@ fun ProductoFormScreen(
                         style = MaterialTheme.typography.displayMedium
                     )
                     Text(
-                        "Registra un nuevo producto",
+                        // Texto dinámico
+                        if (nombre.isNotBlank()) "Modifica el producto" else "Registra un nuevo producto",
                         style = MaterialTheme.typography.bodyLarge,
                         color = GrisMedio
                     )
@@ -329,15 +358,19 @@ fun ProductoFormScreen(
                     Button(
                         onClick = {
                             val nuevoProducto = Producto(
+                                // id se autogenera, no lo establecemos
                                 codigo = codigo,
                                 nombre = nombreState,
                                 descripcion = descripcion,
                                 categoria = categoriaSeleccionada,
                                 precio = precioState.toDoubleOrNull() ?: 0.0,
                                 stock = stock.toIntOrNull() ?: 0,
-                                imagenUrl = null
+                                imagenUrl = null // TODO: Añadir lógica de imagen
                             )
-                            viewModel.guardarProducto(nuevoProducto)
+                            // Usamos el scope para llamar a la suspend fun
+                            scope.launch {
+                                viewModel.guardarProducto(nuevoProducto)
+                            }
                             showSuccessDialog = true
                         },
                         enabled = isFormValid,

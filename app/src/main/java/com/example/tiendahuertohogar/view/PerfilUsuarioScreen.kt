@@ -1,4 +1,3 @@
-// ui/view/PerfilUsuarioScreen.kt
 package com.example.tiendahuertohogar.view
 
 import androidx.compose.foundation.layout.*
@@ -6,15 +5,17 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext // 1. Importar LocalContext
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel // 2. Importar el viewModel estándar
-import com.example.tiendahuertohogar.data.database.ProductoDatabase // 3. Importar tu BD
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.tiendahuertohogar.data.database.ProductoDatabase
 import com.example.tiendahuertohogar.data.model.Usuario
-import com.example.tiendahuertohogar.data.repository.UsuarioRepository // 4. Importar el Repo
+import com.example.tiendahuertohogar.data.repository.UsuarioRepository
 import com.example.tiendahuertohogar.viewmodel.PerfilUsuarioViewModel
-import com.example.tiendahuertohogar.viewmodel.PerfilUsuarioViewModelFactory // 5. Importar la Factory
+import com.example.tiendahuertohogar.viewmodel.PerfilUsuarioViewModelFactory
+// 1. IMPORTA rememberCoroutineScope
+import androidx.compose.runtime.rememberCoroutineScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -22,13 +23,16 @@ fun PerfilUsuarioScreen(
     usuarioId: Long
 ) {
     // --- INICIO DE LA LÓGICA DE INSTANCIACIÓN MANUAL (SIN HILT) ---
-    // A. Obtenemos el contexto para crear la base de datos.
     val context = LocalContext.current.applicationContext
 
+    // 2. OBTÉN EL SCOPE
+    val scope = rememberCoroutineScope()
+
     // B. Creamos manualmente la cadena de dependencias.
-    val database = ProductoDatabase.getDatabase(context)
-    val usuarioRepository = UsuarioRepository(database.usuarioDao()) // Creamos el Repo con el Dao
-    val viewModelFactory = PerfilUsuarioViewModelFactory(usuarioRepository) // Creamos la Factory con el Repo
+    // 3. PASA EL SCOPE A getDatabase
+    val database = ProductoDatabase.getDatabase(context, scope)
+    val usuarioRepository = UsuarioRepository(database.usuarioDao())
+    val viewModelFactory = PerfilUsuarioViewModelFactory(usuarioRepository)
 
     // C. Pasamos nuestra factory al creador del ViewModel.
     val viewModel: PerfilUsuarioViewModel = viewModel(factory = viewModelFactory)
@@ -43,8 +47,7 @@ fun PerfilUsuarioScreen(
         viewModel.cargarPerfil(usuarioId)
     }
 
-    // Estados locales para los campos del formulario, inicializados desde el ViewModel
-    // 'remember' con una clave (usuario) asegura que los estados se reseteen si el usuario cambia
+    // Estados locales para los campos del formulario
     var nombre by remember(usuario?.nombre) { mutableStateOf(usuario?.nombre ?: "") }
     var email by remember(usuario?.email) { mutableStateOf(usuario?.email ?: "") }
     var direccion by remember(usuario?.direccion) { mutableStateOf(usuario?.direccion ?: "") }
@@ -59,7 +62,6 @@ fun PerfilUsuarioScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-            //.padding(16.dp) // Añade un padding general si lo prefieres aquí
         ) {
             when {
                 // Estado de carga inicial
@@ -96,7 +98,7 @@ fun PerfilUsuarioScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                // Estado por defecto si no es carga ni éxito
+                // Estado por defecto
                 else -> {
                     Text(
                         "No se pudo cargar el perfil del usuario.",
@@ -108,7 +110,7 @@ fun PerfilUsuarioScreen(
     }
 }
 
-// Extraje el formulario a su propio Composable para mantener el código más limpio
+// (Tu Composable FormularioPerfil se mantiene igual)
 @Composable
 private fun FormularioPerfil(
     nombre: String, onNombreChange: (String) -> Unit,

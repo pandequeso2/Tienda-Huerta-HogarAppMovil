@@ -1,4 +1,4 @@
-package com.example.tiendahuertohogar.viewmodel
+package com.example.tiendahuertohogar.viewmodel // O 'viewModel' si es minúscula
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
@@ -11,10 +11,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
-// --- 1. Estado de la UI ---
+// --- 1. Estado de la UI (para el catálogo) ---
 data class CatalogoUiState(
     val productos: List<Producto> = emptyList(),
-    val isLoading: Boolean = true // Empezamos cargando
+    val isLoading: Boolean = true
 )
 
 // --- 2. El ViewModel ---
@@ -24,8 +24,7 @@ class ProductoViewModel(private val repository: ProductoRepository) : ViewModel(
     val uiState: StateFlow<CatalogoUiState> = _uiState.asStateFlow()
 
     init {
-        // Observamos el Flow de la base de datos.
-        // Usamos 'repository.allProductos' que tú mismo definiste.
+        // Esto se encarga de cargar la lista para el CatalogoScreen
         viewModelScope.launch {
             repository.allProductos.collect { listaProductos ->
                 _uiState.value = CatalogoUiState(
@@ -36,11 +35,19 @@ class ProductoViewModel(private val repository: ProductoRepository) : ViewModel(
         }
     }
 
-    // Aquí puedes añadir más funciones si las necesitas (insert, delete, etc.)
+    // --- !!! FUNCIÓN AÑADIDA !!! ---
+    /**
+     * Guarda un nuevo producto en la base de datos.
+     * Es llamada por ProductoFormScreen.
+     */
+    fun guardarProducto(producto: Producto) {
+        viewModelScope.launch {
+            repository.insert(producto)
+        }
+    }
 }
 
 // --- 3. La Factory ---
-// (Probablemente ya tienes una, pero así debería ser)
 class ProductoViewModelFactory(
     private val repository: ProductoRepository
 ) : ViewModelProvider.Factory {

@@ -73,7 +73,7 @@ abstract class ProductoDatabase : RoomDatabase() {
             val listaProductos = listOf(
                 Producto(
                     codigo = "FR001",
-                    nombre = "Manzana Fuji",
+                    nombre = "Manzana   Fuji",
                     descripcion = "Manzanas Fuji crujientes y dulces, cultivadas en el Valle del Maule.",
                     categoria = "Frutas Frescas",
                     precio = 1200.0,
