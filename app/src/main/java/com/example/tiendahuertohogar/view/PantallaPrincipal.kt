@@ -12,11 +12,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
-import com.example.tiendahuertohogar.data.database.ProductoDatabase // Importa tu BD
-import com.example.tiendahuertohogar.data.repository.ProductoRepository // Importa tu Repo
+// --- CORRECCIÓN EN LA IMPORTACIÓN ---
+import com.example.tiendahuertohogar.data.database.ProductoDataBase
+import com.example.tiendahuertohogar.data.repository.ProductoRepository
 import com.example.tiendahuertohogar.navigation.PantallaInterna
-import com.example.tiendahuertohogar.viewmodel.ProductoViewModel // Importa tu VM
-import com.example.tiendahuertohogar.viewmodel.ProductoViewModelFactory // Importa tu Factory
+import com.example.tiendahuertohogar.viewmodel.ProductoViewModel
+import com.example.tiendahuertohogar.viewmodel.ProductoViewModelFactory
 import kotlinx.coroutines.launch
 
 // Importa tus pantallas
@@ -35,19 +36,16 @@ fun PantallaPrincipal(
 ) {
     var vistaActual by remember { mutableStateOf<PantallaInterna>(PantallaInterna.Inicio) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope() // Este scope es crucial
+    val scope = rememberCoroutineScope()
     val usuarioId = username.toLongOrNull() ?: 0L
 
-    // --- LÓGICA DE VIEWMODELS ---
     val context = LocalContext.current.applicationContext
 
-    // 1. Instanciamos las dependencias para ProductoViewModel
-    // Pasamos el 'scope' a getDatabase para el callback de pre-poblado
-    val database = ProductoDatabase.getDatabase(context, scope)
-    val productoRepository = ProductoRepository(database.productoDao()) // Tu repo recibe el DAO
+    // --- CORRECCIÓN AQUÍ (ProductoDataBase con 'B') ---
+    val database = ProductoDataBase.getDatabase(context, scope)
+    val productoRepository = ProductoRepository(database.productoDao())
     val productoViewModelFactory = ProductoViewModelFactory(productoRepository)
 
-    // 2. Instanciamos el ProductoViewModel usando su factory
     val productoViewModel: ProductoViewModel = viewModel(factory = productoViewModelFactory)
 
     ModalNavigationDrawer(
@@ -68,23 +66,38 @@ fun PantallaPrincipal(
         }
     ) {
         Scaffold(
-            topBar = { /* ... tu TopAppBar ... */ }
+            topBar = {
+                TopAppBar(
+                    title = { Text(vistaActual.titulo) },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            scope.launch { drawerState.open() }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Abrir menú"
+                            )
+                        }
+                    },
+                    actions = {
+                        IconButton(onClick = { /* TODO: Carrito */ }) {
+                            Icon(Icons.Default.ShoppingCart, contentDescription = "Carrito")
+                        }
+                    }
+                )
+            }
         ) { paddingValues ->
 
             Surface(
                 modifier = Modifier.padding(paddingValues).fillMaxSize(),
                 color = Color(0xFFF7F7F7)
             ) {
-                // --- 'WHEN' MODIFICADO ---
                 when (vistaActual) {
                     is PantallaInterna.Inicio -> InicioScreen(username, navController)
-
-                    // 3. Pasa el ViewModel instanciado a la pantalla
                     is PantallaInterna.Catalogo -> CatalogoScreen(
                         navController = navController,
-                        viewModel = productoViewModel // Pasamos tu ViewModel
+                        viewModel = productoViewModel
                     )
-
                     is PantallaInterna.Blog -> BlogScreen()
                     is PantallaInterna.Fidelizacion -> FidelizacionScreen()
                     is PantallaInterna.Perfil -> PerfilUsuarioScreen(usuarioId = usuarioId)

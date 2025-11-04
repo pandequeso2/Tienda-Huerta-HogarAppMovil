@@ -21,19 +21,20 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalContext // 1. Importar Context
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel // 2. Importar viewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.tiendahuertohogar.data.database.ProductoDatabase // 3. Importar BD
+// --- CORRECCIÓN EN LA IMPORTACIÓN ---
+import com.example.tiendahuertohogar.data.database.ProductoDataBase
 import com.example.tiendahuertohogar.data.model.Producto
-import com.example.tiendahuertohogar.data.repository.ProductoRepository // 4. Importar Repo
+import com.example.tiendahuertohogar.data.repository.ProductoRepository
 import com.example.tiendahuertohogar.ui.theme.*
 import com.example.tiendahuertohogar.viewmodel.ProductoViewModel
-import com.example.tiendahuertohogar.viewmodel.ProductoViewModelFactory // 5. Importar Factory
-import kotlinx.coroutines.launch // 6. Importar launch
+import com.example.tiendahuertohogar.viewmodel.ProductoViewModelFactory
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,32 +42,26 @@ fun ProductoFormScreen(
     navController: NavController,
     nombre: String,
     precio: String
-    // 7. Quitamos el ViewModel de los parámetros
 ) {
-    // --- 8. AÑADIMOS EL BLOQUE DE INSTANCIACIÓN ---
     val context = LocalContext.current.applicationContext
-    val scope = rememberCoroutineScope() // Necesario para la BD y el launch
+    val scope = rememberCoroutineScope()
 
-    val database = ProductoDatabase.getDatabase(context, scope)
+    // --- CORRECCIÓN AQUÍ (ProductoDataBase con 'B') ---
+    val database = ProductoDataBase.getDatabase(context, scope)
     val productoRepository = ProductoRepository(database.productoDao())
     val productoViewModelFactory = ProductoViewModelFactory(productoRepository)
 
-    // Instanciamos el ViewModel aquí mismo
     val viewModel: ProductoViewModel = viewModel(factory = productoViewModelFactory)
-    // --- FIN DEL BLOQUE ---
 
-
-    // Estados para cada campo del formulario
     var codigo by remember { mutableStateOf("") }
     var nombreState by remember { mutableStateOf(nombre) }
     var descripcion by remember { mutableStateOf("") }
     var categoriaSeleccionada by remember { mutableStateOf("") }
 
-    // Corregimos la lógica del precio para manejar el "$" y "CLP"
     val precioLimpio = precio
         .replace("$", "")
         .replace("CLP", "")
-        .replace(".", "") // Quita separador de miles si existe
+        .replace(".", "")
         .trim()
     var precioState by remember { mutableStateOf(precioLimpio) }
 
@@ -81,7 +76,6 @@ fun ProductoFormScreen(
         "Productos Lácteos"
     )
 
-    // Estado para controlar si el formulario es válido
     val isFormValid by remember(codigo, nombreState, descripcion, categoriaSeleccionada, precioState, stock) {
         derivedStateOf {
             codigo.isNotBlank() &&
@@ -98,7 +92,6 @@ fun ProductoFormScreen(
             TopAppBar(
                 title = {
                     Text(
-                        // Título dinámico: si el nombre no está vacío, es "Editar"
                         if (nombre.isNotBlank()) "Editar Producto" else "Nuevo Producto",
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
@@ -127,7 +120,6 @@ fun ProductoFormScreen(
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // Header con gradiente
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -150,7 +142,6 @@ fun ProductoFormScreen(
                         style = MaterialTheme.typography.displayMedium
                     )
                     Text(
-                        // Texto dinámico
                         if (nombre.isNotBlank()) "Modifica el producto" else "Registra un nuevo producto",
                         style = MaterialTheme.typography.bodyLarge,
                         color = GrisMedio
@@ -158,7 +149,6 @@ fun ProductoFormScreen(
                 }
             }
 
-            // Formulario
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -182,7 +172,6 @@ fun ProductoFormScreen(
 
                     Divider(color = GrisClaro)
 
-                    // Código SKU
                     OutlinedTextField(
                         value = codigo,
                         onValueChange = { codigo = it.uppercase() },
@@ -205,7 +194,6 @@ fun ProductoFormScreen(
                         placeholder = { Text("Ej: FR001", color = GrisMedio) }
                     )
 
-                    // Nombre
                     OutlinedTextField(
                         value = nombreState,
                         onValueChange = { nombreState = it },
@@ -228,7 +216,6 @@ fun ProductoFormScreen(
                         placeholder = { Text("Ej: Manzanas Fuji", color = GrisMedio) }
                     )
 
-                    // Descripción
                     OutlinedTextField(
                         value = descripcion,
                         onValueChange = { descripcion = it },
@@ -252,7 +239,6 @@ fun ProductoFormScreen(
                         placeholder = { Text("Describe las características del producto", color = GrisMedio) }
                     )
 
-                    // Categoría (Dropdown)
                     ExposedDropdownMenuBox(
                         expanded = showCategoryMenu,
                         onExpandedChange = { showCategoryMenu = !showCategoryMenu }
@@ -299,12 +285,10 @@ fun ProductoFormScreen(
                         }
                     }
 
-                    // Fila con Precio y Stock
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // Precio
                         OutlinedTextField(
                             value = precioState,
                             onValueChange = { precioState = it },
@@ -328,7 +312,6 @@ fun ProductoFormScreen(
                             prefix = { Text("$", color = AmarilloMostaza) }
                         )
 
-                        // Stock
                         OutlinedTextField(
                             value = stock,
                             onValueChange = { stock = it },
@@ -354,20 +337,17 @@ fun ProductoFormScreen(
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Botón Guardar
                     Button(
                         onClick = {
                             val nuevoProducto = Producto(
-                                // id se autogenera, no lo establecemos
                                 codigo = codigo,
                                 nombre = nombreState,
                                 descripcion = descripcion,
                                 categoria = categoriaSeleccionada,
                                 precio = precioState.toDoubleOrNull() ?: 0.0,
                                 stock = stock.toIntOrNull() ?: 0,
-                                imagenUrl = null // TODO: Añadir lógica de imagen
+                                imagenUrl = null
                             )
-                            // Usamos el scope para llamar a la suspend fun
                             scope.launch {
                                 viewModel.guardarProducto(nuevoProducto)
                             }
@@ -392,7 +372,6 @@ fun ProductoFormScreen(
                         )
                     }
 
-                    // Botón Cancelar
                     OutlinedButton(
                         onClick = { navController.popBackStack() },
                         modifier = Modifier.fillMaxWidth(),
@@ -410,7 +389,6 @@ fun ProductoFormScreen(
         }
     }
 
-    // Diálogo de éxito
     if (showSuccessDialog) {
         AlertDialog(
             onDismissRequest = {

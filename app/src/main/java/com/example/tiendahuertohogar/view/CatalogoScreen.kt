@@ -21,15 +21,14 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.tiendahuertohogar.data.model.Producto
 import com.example.tiendahuertohogar.navigation.AppRoutes
-import com.example.tiendahuertohogar.viewmodel.ProductoViewModel // Usa tu ViewModel
+import com.example.tiendahuertohogar.viewmodel.ProductoViewModel
 import java.net.URLEncoder
 
 @Composable
 fun CatalogoScreen(
     navController: NavHostController,
-    viewModel: ProductoViewModel // Recibe el ViewModel de tu arquitectura
+    viewModel: ProductoViewModel
 ) {
-    // Observa el estado de la UI del ViewModel
     val uiState by viewModel.uiState.collectAsState()
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -37,11 +36,10 @@ fun CatalogoScreen(
             CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
         } else if (uiState.productos.isEmpty()) {
             Text(
-                text = "Cargando productos...", // La BD puede tardar 1 seg en poblarse
+                text = "Cargando productos...",
                 modifier = Modifier.align(Alignment.Center)
             )
         } else {
-            // Usa LazyColumn para mostrar eficientemente la lista
             LazyColumn(
                 contentPadding = PaddingValues(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -61,9 +59,6 @@ fun CatalogoScreen(
     }
 }
 
-/**
- * Composable que dibuja una tarjeta (Card) para un solo producto.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoItemCard(
@@ -72,7 +67,7 @@ fun ProductoItemCard(
 ) {
     val context = LocalContext.current
 
-    // Función para obtener el ID del drawable desde el String "imagenUrl"
+    // Llama a la función helper para obtener el ID del drawable
     val imageResId = getDrawableId(context, producto.imagenUrl)
 
     Card(
@@ -86,7 +81,7 @@ fun ProductoItemCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = painterResource(id = imageResId),
+                painter = painterResource(id = imageResId), // Usa el ID encontrado
                 contentDescription = producto.nombre,
                 modifier = Modifier
                     .size(100.dp)
@@ -120,19 +115,24 @@ fun ProductoItemCard(
 
 /**
  * Función helper para encontrar un ID de drawable basado en su nombre (String).
+ * Si no lo encuentra, devuelve un 'placeholder' para evitar el crash.
  */
 @Composable
 private fun getDrawableId(context: Context, imageName: String?): Int {
+    // 1. Define el nombre de tu imagen placeholder
+    val placeholderName = "placeholder" // <-- CAMBIA ESTO por "placeholder_image" si así la llamaste
+
     if (imageName.isNullOrBlank()) {
-        // Devuelve una imagen 'placeholder' si no hay URL
-        // Asegúrate de tener una imagen llamada 'placeholder_image.png' en res/drawable
-        return context.resources.getIdentifier("placeholder_image", "drawable", context.packageName)
+        // Devuelve el placeholder si la URL está vacía
+        return context.resources.getIdentifier(placeholderName, "drawable", context.packageName)
     }
-    // Busca el drawable por el nombre (ej: "manzana_fuji")
+
+    // 2. Intenta encontrar la imagen por su nombre (ej: "manzana_fuji")
     val id = context.resources.getIdentifier(imageName, "drawable", context.packageName)
-    // Si no lo encuentra (id=0), devuelve el placeholder
+
+    // 3. Si el ID es 0 (no encontrado), devuelve el placeholder. Si no, devuelve el ID.
     return if (id == 0) {
-        context.resources.getIdentifier("placeholder_image", "drawable", context.packageName)
+        context.resources.getIdentifier(placeholderName, "drawable", context.packageName)
     } else {
         id
     }

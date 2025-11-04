@@ -1,142 +1,139 @@
-package com.example.tiendahuertohogar.data.database
+package com.example.tiendahuertohogar.view
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters // 1. IMPORTA ESTO
-import androidx.sqlite.db.SupportSQLiteDatabase
-import com.example.tiendahuertohogar.data.dao.ProductoDAO
-import com.example.tiendahuertohogar.data.dao.UsuarioDAO
-import com.example.tiendahuertohogar.data.dao.PedidoDAO
-import com.example.tiendahuertohogar.data.model.ItemPedido
-import com.example.tiendahuertohogar.data.model.Pedido
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
 import com.example.tiendahuertohogar.data.model.Producto
-import com.example.tiendahuertohogar.data.model.Usuario
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import com.example.tiendahuertohogar.navigation.AppRoutes
+import com.example.tiendahuertohogar.viewmodel.ProductoViewModel
+import java.net.URLEncoder
 
-// Asegúrate de listar todas tus @Entity aquí
-@Database(
-    entities = [Usuario::class, Producto::class, Pedido::class, ItemPedido::class],
-    version = 1,
-    exportSchema = false
-)
-@TypeConverters(Converters::class) // 2. AÑADE ESTA LÍNEA
-abstract class ProductoDatabase : RoomDatabase() {
+@Composable
+fun CatalogoScreen(
+    navController: NavHostController,
+    viewModel: ProductoViewModel
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
-    abstract fun usuarioDao(): UsuarioDAO
-    abstract fun productoDao(): ProductoDAO
-    abstract fun pedidoDao(): PedidoDAO
-
-    companion object {
-        @Volatile
-        private var INSTANCE: ProductoDatabase? = null
-
-        fun getDatabase(
-            context: Context,
-            scope: CoroutineScope
-        ): ProductoDatabase {
-            return INSTANCE ?: synchronized(this) {
-                val instance = Room.databaseBuilder(
-                    context.applicationContext,
-                    ProductoDatabase::class.java,
-                    "producto_database"
-                )
-                    .fallbackToDestructiveMigration()
-                    .addCallback(ProductoDatabaseCallback(scope))
-                    .build()
-                INSTANCE = instance
-                instance
-            }
-        }
-    }
-
-    // (El resto de tu clase ProductoDatabaseCallback va aquí...)
-    private class ProductoDatabaseCallback(
-        private val scope: CoroutineScope
-    ) : RoomDatabase.Callback() {
-
-        override fun onCreate(db: SupportSQLiteDatabase) {
-            super.onCreate(db)
-            INSTANCE?.let { database ->
-                scope.launch(Dispatchers.IO) {
-                    prePoblarProductos(database.productoDao())
+    Box(modifier = Modifier.fillMaxSize()) {
+        if (uiState.isLoading) {
+            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+        } else if (uiState.productos.isEmpty()) {
+            Text(
+                text = "Cargando productos...",
+                modifier = Modifier.align(Alignment.Center)
+            )
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(uiState.productos) { producto ->
+                    ProductoItemCard(
+                        producto = producto,
+                        onProductoClick = {
+                            val nombreEncoded = URLEncoder.encode(producto.nombre, "UTF-8")
+                            val precioEncoded = URLEncoder.encode(producto.precio.toString(), "UTF-8")
+                            navController.navigate("${AppRoutes.PRODUCTO_FORM}/$nombreEncoded/$precioEncoded")
+                        }
+                    )
                 }
             }
         }
+    }
+}
 
-        suspend fun prePoblarProductos(productoDao: ProductoDAO) {
-            productoDao.deleteAll()
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProductoItemCard(
+    producto: Producto,
+    onProductoClick: () -> Unit
+) {
+    val context = LocalContext.current
 
-            val listaProductos = listOf(
-                Producto(
-                    codigo = "FR001",
-                    nombre = "Manzana   Fuji",
-                    descripcion = "Manzanas Fuji crujientes y dulces, cultivadas en el Valle del Maule.",
-                    categoria = "Frutas Frescas",
-                    precio = 1200.0,
-                    stock = 150,
-                    imagenUrl = "manzana_fuji"
-                ),
-                Producto(
-                    codigo = "FR002",
-                    nombre = "Naranjas Valencia",
-                    descripcion = "Jugosas y ricas en vitamina C, estas naranjas Valencia son ideales para zumos frescos.",
-                    categoria = "Frutas Frescas",
-                    precio = 1000.0,
-                    stock = 200,
-                    imagenUrl = "naranja"
-                ),
-                Producto(
-                    codigo = "FR003",
-                    nombre = "Plátanos Cavendish",
-                    descripcion = "Plátanos maduros y dulces, perfectos para el desayuno o como snack energético.",
-                    categoria = "Frutas Frescas",
-                    precio = 800.0,
-                    stock = 250,
-                    imagenUrl = "platano"
-                ),
-                Producto(
-                    codigo = "VR001",
-                    nombre = "Zanahorias Orgánicas",
-                    descripcion = "Zanahorias crujientes cultivadas sin pesticidas en la Región de O'Higgins.",
-                    categoria = "Verduras Orgánicas",
-                    precio = 900.0,
-                    stock = 100,
-                    imagenUrl = "zanahoria"
-                ),
-                Producto(
-                    codigo = "VR002",
-                    nombre = "Espinacas Frescas",
-                    descripcion = "Espinacas frescas y nutritivas, perfectas para ensaladas y batidos verdes.",
-                    categoria = "Verduras Orgánicas",
-                    precio = 700.0,
-                    stock = 80,
-                    imagenUrl = "espinaca"
-                ),
-                Producto(
-                    codigo = "VR003",
-                    nombre = "Pimientos Tricolores",
-                    descripcion = "Pimientos rojos, amarillos y verdes, ideales para salteados y platos coloridos.",
-                    categoria = "Verduras Orgánicas",
-                    precio = 1500.0,
-                    stock = 120,
-                    imagenUrl = "pimiento"
-                ),
-                Producto(
-                    codigo = "PO001",
-                    nombre = "Miel Orgánica",
-                    descripcion = "Miel pura y orgánica producida por apicultores locales.",
-                    categoria = "Productos Orgánicos",
-                    precio = 5000.0,
-                    stock = 50,
-                    imagenUrl = "miel"
-                )
+    // Llama a la función helper para obtener el ID del drawable
+    val imageResId = getDrawableId(context, producto.imagenUrl)
+
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onProductoClick),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Row(
+            modifier = Modifier.padding(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Image(
+                painter = painterResource(id = imageResId), // Usa el ID encontrado
+                contentDescription = producto.nombre,
+                modifier = Modifier
+                    .size(100.dp)
+                    .clip(MaterialTheme.shapes.medium),
+                contentScale = ContentScale.Crop
             )
 
-            productoDao.insertAll(listaProductos)
+            Spacer(Modifier.width(16.dp))
+
+            Column {
+                Text(
+                    text = producto.nombre,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "$${producto.precio} CLP",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "Stock: ${producto.stock}",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
+    }
+}
+
+/**
+ * Función helper para encontrar un ID de drawable basado en su nombre (String).
+ * Si no lo encuentra, devuelve un 'placeholder' para evitar el crash.
+ */
+@Composable
+private fun getDrawableId(context: Context, imageName: String?): Int {
+    // 1. Define el nombre de tu imagen placeholder
+    val placeholderName = "placeholder" // <-- CAMBIA ESTO por "placeholder_image" si así la llamaste
+
+    if (imageName.isNullOrBlank()) {
+        // Devuelve el placeholder si la URL está vacía
+        return context.resources.getIdentifier(placeholderName, "drawable", context.packageName)
+    }
+
+    // 2. Intenta encontrar la imagen por su nombre (ej: "manzana_fuji")
+    val id = context.resources.getIdentifier(imageName, "drawable", context.packageName)
+
+    // 3. Si el ID es 0 (no encontrado), devuelve el placeholder. Si no, devuelve el ID.
+    return if (id == 0) {
+        context.resources.getIdentifier(placeholderName, "drawable", context.packageName)
+    } else {
+        id
     }
 }

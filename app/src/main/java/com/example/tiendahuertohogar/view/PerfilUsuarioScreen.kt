@@ -9,45 +9,36 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.error
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tiendahuertohogar.data.database.ProductoDatabase
+import androidx.compose.runtime.rememberCoroutineScope
+// --- CORRECCIÓN EN LA IMPORTACIÓN ---
+import com.example.tiendahuertohogar.data.database.ProductoDataBase
 import com.example.tiendahuertohogar.data.model.Usuario
 import com.example.tiendahuertohogar.data.repository.UsuarioRepository
 import com.example.tiendahuertohogar.viewmodel.PerfilUsuarioViewModel
 import com.example.tiendahuertohogar.viewmodel.PerfilUsuarioViewModelFactory
-// 1. IMPORTA rememberCoroutineScope
-import androidx.compose.runtime.rememberCoroutineScope
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PerfilUsuarioScreen(
     usuarioId: Long
 ) {
-    // --- INICIO DE LA LÓGICA DE INSTANCIACIÓN MANUAL (SIN HILT) ---
     val context = LocalContext.current.applicationContext
-
-    // 2. OBTÉN EL SCOPE
     val scope = rememberCoroutineScope()
 
-    // B. Creamos manualmente la cadena de dependencias.
-    // 3. PASA EL SCOPE A getDatabase
-    val database = ProductoDatabase.getDatabase(context, scope)
+    // --- CORRECCIÓN AQUÍ (ProductoDataBase con 'B') ---
+    val database = ProductoDataBase.getDatabase(context, scope)
     val usuarioRepository = UsuarioRepository(database.usuarioDao())
     val viewModelFactory = PerfilUsuarioViewModelFactory(usuarioRepository)
 
-    // C. Pasamos nuestra factory al creador del ViewModel.
     val viewModel: PerfilUsuarioViewModel = viewModel(factory = viewModelFactory)
-    // --- FIN DE LA LÓGICA DE INSTANCIACIÓN MANUAL ---
 
-    // Observar el estado de la UI desde el ViewModel
     val uiState by viewModel.uiState.collectAsState()
     val usuario = uiState.usuario
 
-    // Cargar los datos del usuario una sola vez cuando la pantalla aparece
     LaunchedEffect(key1 = usuarioId) {
         viewModel.cargarPerfil(usuarioId)
     }
 
-    // Estados locales para los campos del formulario
     var nombre by remember(usuario?.nombre) { mutableStateOf(usuario?.nombre ?: "") }
     var email by remember(usuario?.email) { mutableStateOf(usuario?.email ?: "") }
     var direccion by remember(usuario?.direccion) { mutableStateOf(usuario?.direccion ?: "") }
@@ -64,11 +55,9 @@ fun PerfilUsuarioScreen(
                 .padding(paddingValues)
         ) {
             when {
-                // Estado de carga inicial
                 uiState.isLoading -> {
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
-                // Si el usuario se carga correctamente, mostrar el formulario
                 usuario != null -> {
                     FormularioPerfil(
                         nombre = nombre,
@@ -90,7 +79,6 @@ fun PerfilUsuarioScreen(
                         }
                     )
                 }
-                // Si hay un error al cargar
                 uiState.error != null -> {
                     Text(
                         text = "Error: ${uiState.error}",
@@ -98,7 +86,6 @@ fun PerfilUsuarioScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                // Estado por defecto
                 else -> {
                     Text(
                         "No se pudo cargar el perfil del usuario.",
@@ -110,7 +97,6 @@ fun PerfilUsuarioScreen(
     }
 }
 
-// (Tu Composable FormularioPerfil se mantiene igual)
 @Composable
 private fun FormularioPerfil(
     nombre: String, onNombreChange: (String) -> Unit,
@@ -134,7 +120,7 @@ private fun FormularioPerfil(
             onValueChange = onEmailChange,
             label = { Text("Correo Electrónico") },
             modifier = Modifier.fillMaxWidth(),
-            readOnly = true // El email no debería ser editable
+            readOnly = true
         )
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
