@@ -1,139 +1,121 @@
-package com.example.tiendahuertohogar.view
+package com.example.tiendahuertohogar.data.database
 
 import android.content.Context
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
+import androidx.sqlite.db.SupportSQLiteDatabase
+import com.example.tiendahuertohogar.data.dao.PedidoDAO
+import com.example.tiendahuertohogar.data.dao.ProductoDAO
+import com.example.tiendahuertohogar.data.dao.UsuarioDAO
+import com.example.tiendahuertohogar.data.model.ItemPedido
+import com.example.tiendahuertohogar.data.model.Pedido
 import com.example.tiendahuertohogar.data.model.Producto
-import com.example.tiendahuertohogar.navigation.AppRoutes
-import com.example.tiendahuertohogar.viewmodel.ProductoViewModel
-import java.net.URLEncoder
+import com.example.tiendahuertohogar.data.model.Usuario
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
-@Composable
-fun CatalogoScreen(
-    navController: NavHostController,
-    viewModel: ProductoViewModel
-) {
-    val uiState by viewModel.uiState.collectAsState()
+@Database(
+    entities = [Usuario::class, Producto::class, Pedido::class, ItemPedido::class],
+    version = 1,
+    exportSchema = false
+)
+@TypeConverters(Converters::class)
+abstract class ProductoDataBase : RoomDatabase() {
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        if (uiState.isLoading) {
-            CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
-        } else if (uiState.productos.isEmpty()) {
-            Text(
-                text = "Cargando productos...",
-                modifier = Modifier.align(Alignment.Center)
-            )
-        } else {
-            LazyColumn(
-                contentPadding = PaddingValues(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                items(uiState.productos) { producto ->
-                    ProductoItemCard(
-                        producto = producto,
-                        onProductoClick = {
-                            val nombreEncoded = URLEncoder.encode(producto.nombre, "UTF-8")
-                            val precioEncoded = URLEncoder.encode(producto.precio.toString(), "UTF-8")
-                            navController.navigate("${AppRoutes.PRODUCTO_FORM}/$nombreEncoded/$precioEncoded")
-                        }
-                    )
+    // DAOs abstractos que la base de datos proveerá
+    abstract fun usuarioDao(): UsuarioDAO
+    abstract fun productoDao(): ProductoDAO
+    abstract fun pedidoDao(): PedidoDAO
+
+    companion object {
+        @Volatile
+        private var INSTANCE: ProductoDataBase? = null
+
+        /**
+         * Obtiene la instancia Singleton de la base de datos.
+         * Coincide con la firma `getDatabase(context, scope)` que usan tus vistas.
+         */
+        fun getDatabase(context: Context, scope: CoroutineScope): ProductoDataBase {
+            return INSTANCE ?: synchronized(this) {
+                val instance = Room.databaseBuilder(
+                    context.applicationContext,
+                    ProductoDataBase::class.java,
+                    "huerto_hogar_database"
+                )
+                    .addCallback(ProductoDatabaseCallback(scope)) // Usa el scope para el callback
+                    .fallbackToDestructiveMigration()
+                    .build()
+                INSTANCE = instance
+                instance
+            }
+        }
+
+
+        private class ProductoDatabaseCallback(
+            private val scope: CoroutineScope
+        ) : RoomDatabase.Callback() {
+            override fun onCreate(db: SupportSQLiteDatabase) {
+                super.onCreate(db)
+                INSTANCE?.let { database ->
+                    scope.launch {
+                        // --- INICIO DE DATOS INICIALES ---
+
+                        // 1. Obtener DAOs
+                        val usuarioDao = database.usuarioDao()
+                        val productoDao = database.productoDao()
+
+                        // 2. Crear Usuario de prueba (para el Perfil y Pedidos)
+                        //    (El login de "admin@huertohogar.cl" es simulado y no usa la BD)
+                        val usuarioPrueba = Usuario(
+                            id = 1L, // ID 1 para asociar a pedidos de prueba
+                            nombre = "Usuario de Prueba",
+                            email = "test@huerto.cl",
+                            direccion = "Avenida Siempreviva 742",
+                            telefono = "+56912345678"
+                        )
+                        usuarioDao.insert(usuarioPrueba)
+
+                        // 3. Crear Productos iniciales
+                        val productosIniciales = listOf(
+                            Producto(
+                                codigo = "FR001",
+                                nombre = "Manzana Fuji (Ejemplo)",
+                                descripcion = "Manzana roja dulce y crujiente, ideal para comer sola.",
+                                categoria = "Frutas Frescas",
+                                precio = 1290.0,
+                                stock = 100,
+                                imagenUrl = "manzana_fuji" // (Debes tener un drawable llamado "manzana_fuji.png" o similar)
+                            ),
+                            Producto(
+                                codigo = "VR001",
+                                nombre = "Lechuga Costina (Ejemplo)",
+                                descripcion = "Lechuga fresca y orgánica para tus ensaladas.",
+                                categoria = "Verduras Orgánicas",
+                                precio = 890.0,
+                                stock = 50,
+                                imagenUrl = "lechuga_costina" // (drawable "lechuga_costina.png")
+                            ),
+                            Producto(
+                                codigo = "OR001",
+                                nombre = "Huevos Orgánicos (Ejemplo)",
+                                descripcion = "Docena de huevos de gallina feliz, de libre pastoreo.",
+                                categoria = "Productos Orgánicos",
+                                precio = 3500.0,
+                                stock = 30,
+                                imagenUrl = "huevos_organicos" // (drawable "huevos_organicos.png")
+                            )
+                        )
+
+                        // 4. Insertar todos los productos
+                        productoDao.insertAll(productosIniciales)
+
+                        // --- FIN DE DATOS INICIALES ---
+                    }
                 }
             }
         }
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ProductoItemCard(
-    producto: Producto,
-    onProductoClick: () -> Unit
-) {
-    val context = LocalContext.current
-
-    // Llama a la función helper para obtener el ID del drawable
-    val imageResId = getDrawableId(context, producto.imagenUrl)
-
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onProductoClick),
-        elevation = CardDefaults.cardElevation(4.dp)
-    ) {
-        Row(
-            modifier = Modifier.padding(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = painterResource(id = imageResId), // Usa el ID encontrado
-                contentDescription = producto.nombre,
-                modifier = Modifier
-                    .size(100.dp)
-                    .clip(MaterialTheme.shapes.medium),
-                contentScale = ContentScale.Crop
-            )
-
-            Spacer(Modifier.width(16.dp))
-
-            Column {
-                Text(
-                    text = producto.nombre,
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "$${producto.precio} CLP",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(Modifier.height(4.dp))
-                Text(
-                    text = "Stock: ${producto.stock}",
-                    style = MaterialTheme.typography.bodySmall
-                )
-            }
-        }
-    }
-}
-
-/**
- * Función helper para encontrar un ID de drawable basado en su nombre (String).
- * Si no lo encuentra, devuelve un 'placeholder' para evitar el crash.
- */
-@Composable
-private fun getDrawableId(context: Context, imageName: String?): Int {
-    // 1. Define el nombre de tu imagen placeholder
-    val placeholderName = "placeholder" // <-- CAMBIA ESTO por "placeholder_image" si así la llamaste
-
-    if (imageName.isNullOrBlank()) {
-        // Devuelve el placeholder si la URL está vacía
-        return context.resources.getIdentifier(placeholderName, "drawable", context.packageName)
-    }
-
-    // 2. Intenta encontrar la imagen por su nombre (ej: "manzana_fuji")
-    val id = context.resources.getIdentifier(imageName, "drawable", context.packageName)
-
-    // 3. Si el ID es 0 (no encontrado), devuelve el placeholder. Si no, devuelve el ID.
-    return if (id == 0) {
-        context.resources.getIdentifier(placeholderName, "drawable", context.packageName)
-    } else {
-        id
-    }
-}
