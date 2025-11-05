@@ -1,26 +1,29 @@
-  // viewModel/HistorialPedidosViewModel.kt
 package com.example.tiendahuertohogar.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tiendahuertohogar.data.model.Pedido
-import com.example.tiendahuertohogar.data.repository.PedidoRepository // Necesitarás crear este repositorio
+import com.example.tiendahuertohogar.data.repository.PedidoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
-// 1. Quitar anotaciones de Hilt (@HiltViewModel, @Inject)
+/**
+ * ViewModel para manejar la lógica de la pantalla de Historial de Pedidos.
+ */
 class HistorialPedidosViewModel(
-    private val pedidoRepository: PedidoRepository // Mantenemos la dependencia del repositorio
+    private val pedidoRepository: PedidoRepository // Depende del Repositorio de Pedidos
 ) : ViewModel() {
 
     // 2. Usar una clase "sealed" para representar el estado de la UI
     private val _state = MutableStateFlow<PedidoUIState>(PedidoUIState.Loading)
     val state: StateFlow<PedidoUIState> = _state.asStateFlow()
 
-    // 3. Crear una función para cargar pedidos basada en un ID dinámico
+    /**
+     * Carga la lista de pedidos para un ID de usuario específico.
+     */
     fun obtenerPedidosPorUsuario(usuarioId: Long) {
         viewModelScope.launch {
             _state.value = PedidoUIState.Loading // Informa a la UI que estamos cargando
@@ -37,7 +40,10 @@ class HistorialPedidosViewModel(
     }
 }
 
-// 4. Definir los posibles estados de la UI para que la pantalla sepa qué dibujar
+/**
+ * Define los posibles estados de la UI para la pantalla de historial de pedidos.
+ * ESTA CLASE TAMBIÉN FALTABA.
+ */
 sealed class PedidoUIState {
     object Loading : PedidoUIState()
     data class Success(val pedidos: List<Pedido>) : PedidoUIState()

@@ -23,6 +23,10 @@ class ProductoViewModel(private val repository: ProductoRepository) : ViewModel(
     private val _uiState = MutableStateFlow(CatalogoUiState())
     val uiState: StateFlow<CatalogoUiState> = _uiState.asStateFlow()
 
+    // --- !! NUEVO STATEFLOW PARA EL PRODUCTO SELECCIONADO !! ---
+    private val _productoSeleccionado = MutableStateFlow<Producto?>(null)
+    val productoSeleccionado: StateFlow<Producto?> = _productoSeleccionado.asStateFlow()
+
     init {
         // Esto se encarga de cargar la lista para el CatalogoScreen
         viewModelScope.launch {
@@ -35,7 +39,18 @@ class ProductoViewModel(private val repository: ProductoRepository) : ViewModel(
         }
     }
 
-    // --- !!! FUNCIÓN AÑADIDA !!! ---
+    // --- !! NUEVA FUNCIÓN PARA CARGAR UN SOLO PRODUCTO !! ---
+    /**
+     * Busca un producto por su ID y actualiza el StateFlow 'productoSeleccionado'.
+     */
+    fun cargarProductoPorId(id: Long) {
+        viewModelScope.launch {
+            repository.findById(id).collect {
+                _productoSeleccionado.value = it
+            }
+        }
+    }
+
     /**
      * Guarda un nuevo producto en la base de datos.
      * Es llamada por ProductoFormScreen.

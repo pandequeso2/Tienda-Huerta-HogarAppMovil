@@ -1,5 +1,9 @@
-package com.example.tiendahuertohogar.ui.view
+package com.example.tiendahuertohogar.view // <-- ASEGÚRATE QUE EL PACKAGE SEA '.view'
 
+// Corregido: La importación debe apuntar a la clase en el paquete 'viewmodel'
+import com.example.tiendahuertohogar.viewmodel.HistorialPedidosViewModel
+import com.example.tiendahuertohogar.viewmodel.PedidoUIState
+// -------------------------------------
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,13 +19,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
-//import androidx.hilt.navigation.compose.hiltViewModel
-
+// import androidx.lifecycle.viewmodel.compose.viewModel // No es necesario si se recibe como parámetro
 import androidx.navigation.NavController
 import com.example.tiendahuertohogar.data.model.Pedido
-import com.example.tiendahuertohogar.viewmodel.HistorialPedidosViewModel
-import com.example.tiendahuertohogar.viewmodel.PedidoUIState
 import java.text.NumberFormat
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -32,8 +32,9 @@ import java.util.*
 fun HistorialPedidosScreen(
     navController: NavController,
     usuarioId: Long,
-    viewModel: HistorialPedidosViewModel = viewModel()
+    viewModel: HistorialPedidosViewModel // Recibe el ViewModel instanciado desde AppNav
 ) {
+    // Llama al ViewModel para cargar los pedidos cuando la pantalla se inicia
     LaunchedEffect(usuarioId) {
         viewModel.obtenerPedidosPorUsuario(usuarioId)
     }
@@ -57,11 +58,14 @@ fun HistorialPedidosScreen(
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
+            // Reacciona al estado del ViewModel
             when (val estado = uiState) {
                 is PedidoUIState.Loading -> {
+                    // Muestra un indicador de carga
                     CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                 }
                 is PedidoUIState.Success -> {
+                    // Muestra la lista de pedidos si no está vacía
                     if (estado.pedidos.isEmpty()) {
                         Text(
                             text = "Aún no has realizado ningún pedido.",
@@ -73,6 +77,7 @@ fun HistorialPedidosScreen(
                                 PedidoListItem(
                                     pedido = pedido,
                                     onPedidoClick = { pedidoId ->
+                                        // TODO: Navegar al detalle del pedido (aún no implementado)
                                         // navController.navigate("detallePedido/${pedidoId}")
                                     }
                                 )
@@ -82,6 +87,7 @@ fun HistorialPedidosScreen(
                     }
                 }
                 is PedidoUIState.Error -> {
+                    // Muestra un mensaje de error
                     Text(
                         text = "Error al cargar los pedidos: ${estado.message}",
                         modifier = Modifier.align(Alignment.Center),
@@ -93,6 +99,9 @@ fun HistorialPedidosScreen(
     }
 }
 
+/**
+ * Un Composable para mostrar un solo ítem de pedido en la lista.
+ */
 @Composable
 private fun PedidoListItem(pedido: Pedido, onPedidoClick: (Long) -> Unit) {
     val fechaFormateada = formatarFecha(pedido.fecha)
@@ -106,6 +115,9 @@ private fun PedidoListItem(pedido: Pedido, onPedidoClick: (Long) -> Unit) {
     )
 }
 
+/**
+ * Helper para formatear un objeto Date a un String legible.
+ */
 private fun formatarFecha(fecha: Date): String {
     val formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")
     return fecha.toInstant()
@@ -114,6 +126,9 @@ private fun formatarFecha(fecha: Date): String {
         .format(formatter)
 }
 
+/**
+ * Helper para formatear un Double a moneda local (Peso Chileno).
+ */
 private fun formatarMoneda(total: Double): String {
     val format = NumberFormat.getCurrencyInstance(Locale("es", "CL"))
     return format.format(total)

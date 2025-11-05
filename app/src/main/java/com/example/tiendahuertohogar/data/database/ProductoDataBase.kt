@@ -33,10 +33,6 @@ abstract class ProductoDataBase : RoomDatabase() {
         @Volatile
         private var INSTANCE: ProductoDataBase? = null
 
-        /**
-         * Obtiene la instancia Singleton de la base de datos.
-         * Coincide con la firma `getDatabase(context, scope)` que usan tus vistas.
-         */
         fun getDatabase(context: Context, scope: CoroutineScope): ProductoDataBase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
@@ -52,7 +48,10 @@ abstract class ProductoDataBase : RoomDatabase() {
             }
         }
 
-
+        /**
+         * Callback para poblar la base de datos cuando se crea por primera vez.
+         * AÑADIMOS TUS PRODUCTOS AQUÍ.
+         */
         private class ProductoDatabaseCallback(
             private val scope: CoroutineScope
         ) : RoomDatabase.Callback() {
@@ -67,9 +66,8 @@ abstract class ProductoDataBase : RoomDatabase() {
                         val productoDao = database.productoDao()
 
                         // 2. Crear Usuario de prueba (para el Perfil y Pedidos)
-                        //    (El login de "admin@huertohogar.cl" es simulado y no usa la BD)
                         val usuarioPrueba = Usuario(
-                            id = 1L, // ID 1 para asociar a pedidos de prueba
+                            id = 1L, // ID 1 para asociar a pedidos
                             nombre = "Usuario de Prueba",
                             email = "test@huerto.cl",
                             direccion = "Avenida Siempreviva 742",
@@ -77,39 +75,75 @@ abstract class ProductoDataBase : RoomDatabase() {
                         )
                         usuarioDao.insert(usuarioPrueba)
 
-                        // 3. Crear Productos iniciales
-                        val productosIniciales = listOf(
+                        // 3. Crear Productos iniciales (basados en tu snippet e imagen)
+                        val listaProductos = listOf(
                             Producto(
                                 codigo = "FR001",
-                                nombre = "Manzana Fuji (Ejemplo)",
-                                descripcion = "Manzana roja dulce y crujiente, ideal para comer sola.",
+                                nombre = "Manzana Fuji", // De tu imagen
+                                descripcion = "Manzanas Fuji crujientes y dulces, cultivadas en el Valle del Maule.",
                                 categoria = "Frutas Frescas",
                                 precio = 1290.0,
-                                stock = 100,
-                                imagenUrl = "manzana_fuji" // (Debes tener un drawable llamado "manzana_fuji.png" o similar)
+                                stock = 150,
+                                imagenUrl = "manzana_fuji" // De tu imagen
                             ),
                             Producto(
                                 codigo = "VR001",
-                                nombre = "Lechuga Costina (Ejemplo)",
-                                descripcion = "Lechuga fresca y orgánica para tus ensaladas.",
+                                nombre = "Espinaca",
+                                descripcion = "Hojas de espinaca fresca, listas para ensalada o cocinar.",
                                 categoria = "Verduras Orgánicas",
-                                precio = 890.0,
-                                stock = 50,
-                                imagenUrl = "lechuga_costina" // (drawable "lechuga_costina.png")
+                                precio = 990.0,
+                                stock = 80,
+                                imagenUrl = "espinaca" // De tu imagen
+                            ),
+                            Producto(
+                                codigo = "VR002",
+                                nombre = "Zanahoria",
+                                descripcion = "Zanahorias dulces y crujientes, 1kg.",
+                                categoria = "Verduras Orgánicas",
+                                precio = 850.0,
+                                stock = 120,
+                                imagenUrl = "zanahoria" // De tu imagen
+                            ),
+                            Producto(
+                                codigo = "FR002",
+                                nombre = "Plátano",
+                                descripcion = "Plátanos maduros, fuente de potasio. 1kg.",
+                                categoria = "Frutas Frescas",
+                                precio = 1100.0,
+                                stock = 200,
+                                imagenUrl = "platano" // De tu imagen
+                            ),
+                            Producto(
+                                codigo = "FR003",
+                                nombre = "Naranja",
+                                descripcion = "Naranjas jugosas para exprimir, 1kg.",
+                                categoria = "Frutas Frescas",
+                                precio = 1050.0,
+                                stock = 100,
+                                imagenUrl = "naranja" // De tu imagen
+                            ),
+                            Producto(
+                                codigo = "VR003",
+                                nombre = "Pimiento",
+                                descripcion = "Pimiento morrón rojo fresco.",
+                                categoria = "Verduras Orgánicas",
+                                precio = 700.0,
+                                stock = 70,
+                                imagenUrl = "pimiento" // De tu imagen
                             ),
                             Producto(
                                 codigo = "OR001",
-                                nombre = "Huevos Orgánicos (Ejemplo)",
-                                descripcion = "Docena de huevos de gallina feliz, de libre pastoreo.",
+                                nombre = "Miel",
+                                descripcion = "Miel de abeja 100% natural, 500g.",
                                 categoria = "Productos Orgánicos",
-                                precio = 3500.0,
-                                stock = 30,
-                                imagenUrl = "huevos_organicos" // (drawable "huevos_organicos.png")
+                                precio = 4500.0,
+                                stock = 50,
+                                imagenUrl = "miel" // De tu imagen
                             )
                         )
 
                         // 4. Insertar todos los productos
-                        productoDao.insertAll(productosIniciales)
+                        productoDao.insertAll(listaProductos)
 
                         // --- FIN DE DATOS INICIALES ---
                     }
@@ -118,4 +152,3 @@ abstract class ProductoDataBase : RoomDatabase() {
         }
     }
 }
-
