@@ -33,7 +33,6 @@ import com.example.tiendahuertohogar.view.ProductoFormScreen
 // import com.example.tiendahuertohogar.view.QrScannerScreen // IGNORADO
 import com.example.tiendahuertohogar.viewmodel.HistorialPedidosViewModel
 // --- !! IMPORTACIÓN AÑADIDA !! ---
-import com.example.tiendahuertohogar.viewmodel.HistorialPedidosViewModelFactory
 import com.example.tiendahuertohogar.ui.login.LoginViewModel
 import com.example.tiendahuertohogar.viewmodel.ProductoViewModel
 import com.example.tiendahuertohogar.viewmodel.ProductoViewModelFactory

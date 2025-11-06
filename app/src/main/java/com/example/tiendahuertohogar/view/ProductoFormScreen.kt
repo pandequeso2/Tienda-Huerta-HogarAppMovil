@@ -1,432 +1,173 @@
 package com.example.tiendahuertohogar.view
 
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Inventory
-import androidx.compose.material.icons.filled.MonetizationOn
-import androidx.compose.material.icons.filled.QrCode
-import androidx.compose.material.icons.filled.Title
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-// --- CORRECCIÓN EN LA IMPORTACIÓN ---
-import com.example.tiendahuertohogar.data.database.ProductoDataBase
-import com.example.tiendahuertohogar.data.model.Producto
-import com.example.tiendahuertohogar.data.repository.ProductoRepository
-import com.example.tiendahuertohogar.ui.theme.*
-import com.example.tiendahuertohogar.viewmodel.ProductoViewModel
-import com.example.tiendahuertohogar.viewmodel.ProductoViewModelFactory
-import kotlinx.coroutines.launch
+import com.example.proyectologin006d_final.data.model.Producto
+import com.example.proyectologin006d_final.viewmodel.ProductoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoFormScreen(
-    navController: NavController,
-    nombre: String,
-    precio: String
+    // Eliminé los parámetros que no se necesitan,
+    // ya que este formulario es para crear un producto nuevo.
+    viewModel: ProductoViewModel = viewModel()
 ) {
-    val context = LocalContext.current.applicationContext
-    val scope = rememberCoroutineScope()
-
-    // --- CORRECCIÓN AQUÍ (ProductoDataBase con 'B') ---
-    val database = ProductoDataBase.getDatabase(context, scope)
-    val productoRepository = ProductoRepository(database.productoDao())
-    val productoViewModelFactory = ProductoViewModelFactory(productoRepository)
-
-    val viewModel: ProductoViewModel = viewModel(factory = productoViewModelFactory)
-
+    // Estados para los campos del formulario. Es mejor usar String directamente.
     var codigo by remember { mutableStateOf("") }
-    var nombreState by remember { mutableStateOf(nombre) }
+    var categoria by remember { mutableStateOf("") }
+    var nombre by remember { mutableStateOf("") }
+    var precio by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
-    var categoriaSeleccionada by remember { mutableStateOf("") }
+    var personalizable by remember { mutableStateOf(false) }
 
-    val precioLimpio = precio
-        .replace("$", "")
-        .replace("CLP", "")
-        .replace(".", "")
-        .trim()
-    var precioState by remember { mutableStateOf(precioLimpio) }
+    // Observar la lista de productos del ViewModel
+    val productos by viewModel.productos.collectAsState()
 
-    var stock by remember { mutableStateOf("") }
-    var showCategoryMenu by remember { mutableStateOf(false) }
-    var showSuccessDialog by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Registrar Nuevo Producto", style = MaterialTheme.typography.headlineMedium)
 
-    val categorias = listOf(
-        "Frutas Frescas",
-        "Verduras Orgánicas",
-        "Productos Orgánicos",
-        "Productos Lácteos"
-    )
+        Spacer(modifier = Modifier.height(16.dp))
 
-    val isFormValid by remember(codigo, nombreState, descripcion, categoriaSeleccionada, precioState, stock) {
-        derivedStateOf {
-            codigo.isNotBlank() &&
-                    nombreState.isNotBlank() &&
-                    descripcion.isNotBlank() &&
-                    categoriaSeleccionada.isNotBlank() &&
-                    (precioState.toDoubleOrNull() ?: 0.0) > 0.0 &&
-                    (stock.toIntOrNull() ?: -1) >= 0
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        if (nombre.isNotBlank()) "Editar Producto" else "Nuevo Producto",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            Icons.Default.ArrowBack,
-                            contentDescription = "Volver",
-                            tint = BlancoNieve
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = VerdeEsmeralda,
-                    titleContentColor = BlancoNieve
-                )
-            )
-        },
-        containerColor = BlancoSuave
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .padding(paddingValues)
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(120.dp)
-                    .background(
-                        brush = Brush.verticalGradient(
-                            colors = listOf(
-                                VerdeEsmeralda.copy(alpha = 0.3f),
-                                BlancoSuave
-                            )
-                        )
-                    ),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        "🌱",
-                        style = MaterialTheme.typography.displayMedium
-                    )
-                    Text(
-                        if (nombre.isNotBlank()) "Modifica el producto" else "Registra un nuevo producto",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = GrisMedio
-                    )
-                }
-            }
-
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .shadow(2.dp, shape = RoundedCornerShape(16.dp)),
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = BlancoNieve
-                )
-            ) {
-                Column(
-                    modifier = Modifier.padding(20.dp),
-                    verticalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    Text(
-                        "Información del Producto",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MarronClaro,
-                        fontWeight = FontWeight.SemiBold
-                    )
-
-                    Divider(color = GrisClaro)
-
-                    OutlinedTextField(
-                        value = codigo,
-                        onValueChange = { codigo = it.uppercase() },
-                        label = { Text("Código SKU") },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.QrCode,
-                                contentDescription = null,
-                                tint = VerdeEsmeralda
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = VerdeEsmeralda,
-                            focusedLabelColor = VerdeEsmeralda,
-                            cursorColor = VerdeEsmeralda
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        placeholder = { Text("Ej: FR001", color = GrisMedio) }
-                    )
-
-                    OutlinedTextField(
-                        value = nombreState,
-                        onValueChange = { nombreState = it },
-                        label = { Text("Nombre del Producto") },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.Title,
-                                contentDescription = null,
-                                tint = VerdeEsmeralda
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        singleLine = true,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = VerdeEsmeralda,
-                            focusedLabelColor = VerdeEsmeralda,
-                            cursorColor = VerdeEsmeralda
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        placeholder = { Text("Ej: Manzanas Fuji", color = GrisMedio) }
-                    )
-
-                    OutlinedTextField(
-                        value = descripcion,
-                        onValueChange = { descripcion = it },
-                        label = { Text("Descripción") },
-                        leadingIcon = {
-                            Icon(
-                                Icons.Default.Description,
-                                contentDescription = null,
-                                tint = VerdeEsmeralda
-                            )
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                        minLines = 3,
-                        maxLines = 5,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = VerdeEsmeralda,
-                            focusedLabelColor = VerdeEsmeralda,
-                            cursorColor = VerdeEsmeralda
-                        ),
-                        shape = RoundedCornerShape(12.dp),
-                        placeholder = { Text("Describe las características del producto", color = GrisMedio) }
-                    )
-
-                    ExposedDropdownMenuBox(
-                        expanded = showCategoryMenu,
-                        onExpandedChange = { showCategoryMenu = !showCategoryMenu }
-                    ) {
-                        OutlinedTextField(
-                            value = categoriaSeleccionada,
-                            onValueChange = {},
-                            readOnly = true,
-                            label = { Text("Categoría") },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.Category,
-                                    contentDescription = null,
-                                    tint = VerdeEsmeralda
-                                )
-                            },
-                            trailingIcon = {
-                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = showCategoryMenu)
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .menuAnchor(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = VerdeEsmeralda,
-                                focusedLabelColor = VerdeEsmeralda
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            placeholder = { Text("Selecciona una categoría", color = GrisMedio) }
-                        )
-
-                        ExposedDropdownMenu(
-                            expanded = showCategoryMenu,
-                            onDismissRequest = { showCategoryMenu = false }
-                        ) {
-                            categorias.forEach { categoria ->
-                                DropdownMenuItem(
-                                    text = { Text(categoria) },
-                                    onClick = {
-                                        categoriaSeleccionada = categoria
-                                        showCategoryMenu = false
-                                    }
-                                )
-                            }
-                        }
-                    }
-
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        OutlinedTextField(
-                            value = precioState,
-                            onValueChange = { precioState = it },
-                            label = { Text("Precio (CLP)") },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.MonetizationOn,
-                                    contentDescription = null,
-                                    tint = AmarilloMostaza
-                                )
-                            },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = VerdeEsmeralda,
-                                focusedLabelColor = VerdeEsmeralda,
-                                cursorColor = VerdeEsmeralda
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            placeholder = { Text("1000", color = GrisMedio) },
-                            prefix = { Text("$", color = AmarilloMostaza) }
-                        )
-
-                        OutlinedTextField(
-                            value = stock,
-                            onValueChange = { stock = it },
-                            label = { Text("Stock") },
-                            leadingIcon = {
-                                Icon(
-                                    Icons.Default.Inventory,
-                                    contentDescription = null,
-                                    tint = VerdeEsmeralda
-                                )
-                            },
-                            modifier = Modifier.weight(1f),
-                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = VerdeEsmeralda,
-                                focusedLabelColor = VerdeEsmeralda,
-                                cursorColor = VerdeEsmeralda
-                            ),
-                            shape = RoundedCornerShape(12.dp),
-                            placeholder = { Text("100", color = GrisMedio) }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
-                    Button(
-                        onClick = {
-                            val nuevoProducto = Producto(
-                                codigo = codigo,
-                                nombre = nombreState,
-                                descripcion = descripcion,
-                                categoria = categoriaSeleccionada,
-                                precio = precioState.toDoubleOrNull() ?: 0.0,
-                                stock = stock.toIntOrNull() ?: 0,
-                                imagenUrl = null
-                            )
-                            scope.launch {
-                                viewModel.guardarProducto(nuevoProducto)
-                            }
-                            showSuccessDialog = true
-                        },
-                        enabled = isFormValid,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = VerdeEsmeralda,
-                            contentColor = BlancoNieve,
-                            disabledContainerColor = GrisClaro,
-                            disabledContentColor = GrisMedio
-                        )
-                    ) {
-                        Text(
-                            "Guardar Producto",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-
-                    OutlinedButton(
-                        onClick = { navController.popBackStack() },
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(
-                            contentColor = GrisMedio
-                        )
-                    ) {
-                        Text("Cancelar")
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-    }
-
-    if (showSuccessDialog) {
-        AlertDialog(
-            onDismissRequest = {
-                showSuccessDialog = false
-                navController.popBackStack()
-            },
-            icon = {
-                Text("✅", style = MaterialTheme.typography.displaySmall)
-            },
-            title = {
-                Text(
-                    "¡Producto Guardado!",
-                    style = MaterialTheme.typography.titleLarge,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Text(
-                    "El producto '$nombreState' se ha registrado correctamente en el sistema.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = GrisMedio
-                )
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showSuccessDialog = false
-                        navController.popBackStack()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = VerdeEsmeralda
-                    )
-                ) {
-                    Text("Aceptar")
-                }
-            },
-            containerColor = BlancoNieve,
-            shape = RoundedCornerShape(16.dp)
+        // --- Formulario ---
+        OutlinedTextField(
+            value = nombre,
+            onValueChange = { nombre = it },
+            label = { Text("Nombre del Producto") },
+            modifier = Modifier.fillMaxWidth()
         )
+        OutlinedTextField(
+            value = descripcion,
+            onValueChange = { descripcion = it },
+            label = { Text("Descripción") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = precio,
+            onValueChange = { precio = it },
+            label = { Text("Precio") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = categoria,
+            onValueChange = { categoria = it },
+            label = { Text("Categoría (ej: Tortas, Galletas)") },
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = codigo,
+            onValueChange = { codigo = it },
+            label = { Text("Código/SKU") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Checkbox(
+                checked = personalizable,
+                onCheckedChange = { personalizable = it }
+            )
+            Text("Es personalizable")
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Button(
+            onClick = {
+                val precioInt = precio.toIntOrNull() ?: 0 // Convertir precio a Int
+                val producto = Producto(
+                    // id se genera automáticamente, no lo incluimos aquí
+                    id = 0,
+                    codigo = codigo,
+                    categoria = categoria,
+                    nombre = nombre,
+                    precio = precioInt,
+                    descripcion = descripcion,
+                    personalizable = personalizable
+                )
+                viewModel.guardarProducto(producto)
+
+                // Limpiar formulario
+                codigo = ""
+                categoria = ""
+                nombre = ""
+                precio = ""
+                descripcion = ""
+                personalizable = false
+            },
+            // El botón se activa solo si los campos importantes no están vacíos
+            enabled = nombre.isNotBlank() && precio.isNotBlank() && categoria.isNotBlank()
+        ) {
+            Text("Guardar Producto")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+        Divider()
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("Productos Registrados", style = MaterialTheme.typography.headlineSmall)
+
+        // --- Lista de Productos ---
+        LazyColumn(modifier = Modifier.fillMaxWidth()) {
+            items(productos) { producto ->
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    elevation = CardDefaults.cardElevation(4.dp)
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(producto.nombre, style = MaterialTheme.typography.titleMedium)
+                        Text(producto.descripcion, style = MaterialTheme.typography.bodySmall)
+                        Text(
+                            "Precio: $${producto.precio}",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            }
+        }
     }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewProductoFormScreen() {
+    ProductoFormScreen()
+}
 }
