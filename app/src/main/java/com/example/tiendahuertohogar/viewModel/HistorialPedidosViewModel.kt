@@ -2,8 +2,6 @@ package com.example.tiendahuertohogar.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tiendahuertohogar.data.model.Pedido
-import com.example.tiendahuertohogar.data.repository.PedidoRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

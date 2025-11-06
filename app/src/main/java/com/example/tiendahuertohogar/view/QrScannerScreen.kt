@@ -23,7 +23,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import com.example.tiendahuertohogar.data.model.QrData
 import com.example.tiendahuertohogar.navigation.AppRoutes
 import com.example.tiendahuertohogar.ui.theme.*
 import com.example.tiendahuertohogar.utils.QrScanner

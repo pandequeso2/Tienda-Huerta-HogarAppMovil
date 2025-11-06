@@ -6,13 +6,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.error
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.runtime.rememberCoroutineScope
 // --- CORRECCIÓN EN LA IMPORTACIÓN ---
-import com.example.tiendahuertohogar.data.database.ProductoDataBase
-import com.example.tiendahuertohogar.data.model.Usuario
+import com.example.tiendahuertohogar.data.database.AppDataBase
 import com.example.tiendahuertohogar.data.repository.UsuarioRepository
 import com.example.tiendahuertohogar.viewmodel.PerfilUsuarioViewModel
 import com.example.tiendahuertohogar.viewmodel.PerfilUsuarioViewModelFactory
@@ -26,7 +24,7 @@ fun PerfilUsuarioScreen(
     val scope = rememberCoroutineScope()
 
     // --- CORRECCIÓN AQUÍ (ProductoDataBase con 'B') ---
-    val database = ProductoDataBase.getDatabase(context, scope)
+    val database = AppDataBase.getDatabase(context, scope)
     val usuarioRepository = UsuarioRepository(database.usuarioDao())
     val viewModelFactory = PerfilUsuarioViewModelFactory(usuarioRepository)
 

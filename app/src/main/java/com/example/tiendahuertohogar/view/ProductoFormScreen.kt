@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 // --- CORRECCIÓN EN LA IMPORTACIÓN ---
-import com.example.tiendahuertohogar.data.database.ProductoDataBase
+import com.example.tiendahuertohogar.data.database.AppDataBase
 import com.example.tiendahuertohogar.data.model.Producto
 import com.example.tiendahuertohogar.data.repository.ProductoRepository
 import com.example.tiendahuertohogar.ui.theme.*
@@ -47,7 +47,7 @@ fun ProductoFormScreen(
     val scope = rememberCoroutineScope()
 
     // --- CORRECCIÓN AQUÍ (ProductoDataBase con 'B') ---
-    val database = ProductoDataBase.getDatabase(context, scope)
+    val database = AppDataBase.getDatabase(context, scope)
     val productoRepository = ProductoRepository(database.productoDao())
     val productoViewModelFactory = ProductoViewModelFactory(productoRepository)
 

@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 // import androidx.lifecycle.viewmodel.compose.viewModel // No es necesario si se recibe como parámetro
 import androidx.navigation.NavController
-import com.example.tiendahuertohogar.data.model.Pedido
 import java.text.NumberFormat
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

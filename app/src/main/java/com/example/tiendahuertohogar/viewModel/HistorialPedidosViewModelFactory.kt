@@ -2,7 +2,6 @@ package com.example.tiendahuertohogar.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.example.tiendahuertohogar.data.repository.PedidoRepository
 
 /**
  * Esta clase es la "Fábrica" que le enseña al sistema cómo crear

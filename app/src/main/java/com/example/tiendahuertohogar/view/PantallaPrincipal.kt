@@ -13,7 +13,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.platform.LocalContext
 import androidx.navigation.NavHostController
 // --- CORRECCIÓN EN LA IMPORTACIÓN ---
-import com.example.tiendahuertohogar.data.database.ProductoDataBase
+import com.example.tiendahuertohogar.data.database.AppDataBase
 import com.example.tiendahuertohogar.data.repository.ProductoRepository
 import com.example.tiendahuertohogar.navigation.PantallaInterna
 import com.example.tiendahuertohogar.viewmodel.ProductoViewModel
@@ -21,12 +21,6 @@ import com.example.tiendahuertohogar.viewmodel.ProductoViewModelFactory
 import kotlinx.coroutines.launch
 
 // Importa tus pantallas
-import com.example.tiendahuertohogar.view.PerfilUsuarioScreen
-import com.example.tiendahuertohogar.view.MapaTiendasScreen
-import com.example.tiendahuertohogar.view.InicioScreen
-import com.example.tiendahuertohogar.view.CatalogoScreen
-import com.example.tiendahuertohogar.view.BlogScreen
-import com.example.tiendahuertohogar.view.FidelizacionScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,7 +36,7 @@ fun PantallaPrincipal(
     val context = LocalContext.current.applicationContext
 
     // --- CORRECCIÓN AQUÍ (ProductoDataBase con 'B') ---
-    val database = ProductoDataBase.getDatabase(context, scope)
+    val database = AppDataBase.getDatabase(context, scope)
     val productoRepository = ProductoRepository(database.productoDao())
     val productoViewModelFactory = ProductoViewModelFactory(productoRepository)
 
