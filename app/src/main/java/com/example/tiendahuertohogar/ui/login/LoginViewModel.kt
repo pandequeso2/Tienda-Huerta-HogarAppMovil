@@ -1,52 +1,58 @@
 // en ui/login/LoginViewModel.kt
 package com.example.tiendahuertohogar.ui.login
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
-import com.example.tiendahuertohogar.data.repository.AuthRepository
-import com.example.tiendahuertohogar.data.model.Credential // Importa Credential
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import com.example.tiendahuertohogar.data.database.AppDataBase
+import com.example.tiendahuertohogar.data.repository.UsuarioRepository
+import com.example.tiendahuertohogar.utils.SessionManager
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
-// Tu LoginUiState se mantiene igual, está perfecto
-data class LoginUiState(
-    val username: String = "",
-    val password: String = "",
-    val isLoading: Boolean = false,
-    val error: String? = null,
-    val loginSuccess: Boolean = false
-)
+class LoginViewModel(application: Application) : AndroidViewModel(application) {
 
-class LoginViewModel : ViewModel() {
+    private val repository: UsuarioRepository
 
-    // --- 1. CREA UNA INSTANCIA DEL REPOSITORIO ---
-    private val authRepository = AuthRepository()
-
-    private val _uiState = MutableStateFlow(LoginUiState())
-    val uiState = _uiState.asStateFlow()
-
-    // --- 2. FUNCIÓN PARA MANEJAR CAMBIOS EN LOS TEXTFIELDS ---
-    fun onLoginChanged(username: String, pass: String) {
-        _uiState.update { currentState ->
-            currentState.copy(username = username, password = pass)
-        }
+    init {
+        val usuarioDao = AppDataBase.getDatabase(application).usuarioDao()
+        repository = UsuarioRepository(usuarioDao)
     }
 
-    // --- 3. MODIFICA onLogin PARA QUE USE EL ESTADO INTERNO ---
-    fun onLogin() {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
+    var uiState by mutableStateOf(LoginUiState())
+        private set
 
-            // Usa los valores del estado actual
-            val credential = Credential(_uiState.value.username, _uiState.value.password)
-            val loginExitoso = authRepository.login(credential)
+    fun onCorreoChange(value: String) {
+        uiState = uiState.copy(correo = value, mensaje = "")
+    }
 
-            if (loginExitoso) {
-                _uiState.update { it.copy(isLoading = false, loginSuccess = true) }
-            } else {
-                _uiState.update { it.copy(isLoading = false, error = "Credenciales inválidas") }
+    fun onClaveChange(value: String) {
+        uiState = uiState.copy(clave = value, mensaje = "")
+    }
+
+    fun submit(onSuccess: (String) -> Unit) {
+        uiState = uiState.copy(isLoading = true, mensaje = "")
+
+        viewModelScope.launch(Dispatchers.IO) {
+            val user = repository.buscarUsuario(
+                uiState.correo.trim(),
+                uiState.clave
+            )
+
+            launch(Dispatchers.Main) {
+                uiState = uiState.copy(isLoading = false)
+                if (user != null) {
+                    // Guardamos la sesión del usuario
+                    SessionManager.saveSession(getApplication(), user.nombreCompleto)
+                    SessionManager.saveUserEmail(getApplication(), user.correo)
+                    // Si encontramos el usuario, navegamos. Pasamos el nombre completo.
+                    onSuccess(user.nombreCompleto)
+                } else {
+                    uiState = uiState.copy(mensaje = "Correo o clave incorrectos")
+                }
             }
         }
     }
