@@ -1,4 +1,3 @@
-
 package com.example.tiendahuertohogar.ui.theme
 
 import android.app.Activity
@@ -18,17 +17,17 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = VerdeEsmeralda,
+    primary = VerdeEsmeralda, // [cite: 152]
     onPrimary = BlancoNieve,
     primaryContainer = VerdeEsmeraldaOscuro,
     onPrimaryContainer = VerdeEsmeraldaClaro,
 
-    secondary = AmarilloMostaza,
+    secondary = AmarilloMostaza, // [cite: 153]
     onSecondary = GrisOscuro,
     secondaryContainer = Color(0xFFFFE082),
     onSecondaryContainer = GrisOscuro,
 
-    tertiary = MarronClaro,
+    tertiary = MarronClaro, // [cite: 154]
     onTertiary = BlancoNieve,
     tertiaryContainer = Color(0xFF6D3410),
     onTertiaryContainer = Color(0xFFD4A574),
@@ -38,7 +37,7 @@ private val DarkColorScheme = darkColorScheme(
     errorContainer = Color(0xFFFFCDD2),
     onErrorContainer = Color(0xFFB71C1C),
 
-    background = Color(0xFF1C1B1F),
+    background = Color(0xFF1C1B1F), // Fondo oscuro genérico
     onBackground = Color(0xFFE6E1E5),
     surface = Color(0xFF1C1B1F),
     onSurface = Color(0xFFE6E1E5),
@@ -49,17 +48,17 @@ private val DarkColorScheme = darkColorScheme(
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = VerdeEsmeralda,
+    primary = VerdeEsmeralda, // [cite: 152]
     onPrimary = BlancoNieve,
     primaryContainer = VerdeEsmeraldaClaro,
     onPrimaryContainer = VerdeEsmeraldaOscuro,
 
-    secondary = AmarilloMostaza,
+    secondary = AmarilloMostaza, // [cite: 153]
     onSecondary = GrisOscuro,
     secondaryContainer = Color(0xFFFFE57F),
     onSecondaryContainer = GrisOscuro,
 
-    tertiary = MarronClaro,
+    tertiary = MarronClaro, // [cite: 154]
     onTertiary = BlancoNieve,
     tertiaryContainer = Color(0xFFD4A574),
     onTertiaryContainer = Color(0xFF4A2511),
@@ -69,25 +68,20 @@ private val LightColorScheme = lightColorScheme(
     errorContainer = Color(0xFFFFCDD2),
     onErrorContainer = Color(0xFFB71C1C),
 
-    background = BlancoSuave,
-    onBackground = GrisOscuro,
+    background = BlancoSuave, // [cite: 149]
+    onBackground = GrisOscuro, // [cite: 166]
     surface = BlancoNieve,
-    onSurface = GrisOscuro,
+    onSurface = GrisOscuro, // [cite: 166]
 
     surfaceVariant = GrisClaro,
-    onSurfaceVariant = GrisMedio,
+    onSurfaceVariant = GrisMedio, // [cite: 168]
     outline = Color(0xFF999999),
-
-    inverseSurface = GrisOscuro,
-    inverseOnSurface = BlancoSuave,
-    inversePrimary = VerdeEsmeraldaClaro,
 )
 
 @Composable
 fun TiendaHuertoHogarTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false, // Deshabilitado para usar colores personalizados
+    dynamicColor: Boolean = false, // Deshabilitado para forzar colores del PDF
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -103,6 +97,7 @@ fun TiendaHuertoHogarTheme(
     if (!view.isInEditMode) {
         SideEffect {
             val window = (view.context as Activity).window
+            // Usamos VerdeEsmeralda para la barra de estado
             window.statusBarColor = colorScheme.primary.toArgb()
             WindowCompat.getInsetsController(window, view).isAppearanceLightStatusBars = !darkTheme
         }
@@ -110,7 +105,7 @@ fun TiendaHuertoHogarTheme(
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography,
+        typography = Typography, // Aplicamos la tipografía personalizada
         content = content
     )
 }

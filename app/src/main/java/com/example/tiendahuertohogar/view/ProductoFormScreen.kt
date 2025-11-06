@@ -30,8 +30,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.proyectologin006d_final.data.model.Producto
-import com.example.proyectologin006d_final.viewmodel.ProductoViewModel
+import com.example.tiendahuertohogar.data.model.Producto
+import com.example.tiendahuertohogar.viewmodel.ProductoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -169,5 +169,4 @@ fun ProductoFormScreen(
 @Composable
 fun PreviewProductoFormScreen() {
     ProductoFormScreen()
-}
 }

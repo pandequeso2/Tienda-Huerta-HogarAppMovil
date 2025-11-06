@@ -7,13 +7,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.example.tiendahuertohogar.navigation.AppNav
-import com.example.tiendahuertohogar.ui.theme.ProyectoLogin006D_finalTheme
+import com.example.tiendahuertohogar.ui.theme.TiendaHuertoHogarTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            ProyectoLogin006D_finalTheme {
+            TiendaHuertoHogarTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),

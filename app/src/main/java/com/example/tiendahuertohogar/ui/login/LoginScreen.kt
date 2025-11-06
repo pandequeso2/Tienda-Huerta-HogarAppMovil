@@ -1,17 +1,14 @@
 package com.example.tiendahuertohogar.ui.login
 
-import android.app.Application // ✨ Importación necesaria
+import android.app.Application
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -24,43 +21,33 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.example.proyectologin006d_final.R
+import com.example.tiendahuertohogar.R // Asegúrate de que R se importe correctamente
+import com.example.tiendahuertohogar.ui.theme.TiendaHuertoHogarTheme // Importa el tema principal
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginScreen(
-    navController: NavController
+    navController: NavController,
+    vm: LoginViewModel // Recibe el ViewModel
 ) {
-    val context = LocalContext.current
-    val factory = ViewModelProvider.AndroidViewModelFactory.getInstance(context.applicationContext as Application)
-    val vm: LoginViewModel = viewModel(factory = factory)
-
     val state = vm.uiState
     var showPass by remember { mutableStateOf(false) }
 
-    val pastelBackground = Color(0xFFFFF8F0)
-    val pastelAccent = Color(0xFFFFCCBC)
-    val pastelText = Color(0xFF5D4037)
-
-    MaterialTheme(
-        colorScheme = lightColorScheme(
-            primary = pastelAccent,
-            onPrimary = Color.White,
-            surface = pastelBackground,
-            onSurface = pastelText,
-            background = pastelBackground
-        )
-    ) {
+    // Usamos el Tema principal que ya tiene los colores del PDF
+    TiendaHuertoHogarTheme {
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            "Pastelería App",
+                            "Tienda Huerto Hogar", // Título actualizado
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(containerColor = pastelAccent)
+                    // Color primario (VerdeEsmeralda) del tema
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    )
                 )
             }
         ) { innerPadding ->
@@ -74,17 +61,16 @@ fun LoginScreen(
             ) {
                 Text(
                     text = "Bienvenido",
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = pastelText
-                    )
+                    style = MaterialTheme.typography.headlineMedium, // Usa tipografía del tema
+                    color = MaterialTheme.colorScheme.tertiary // Color MarronClaro para títulos
                 )
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Image(
-                    painter = painterResource(id = R.drawable.logoduoc2),
-                    contentDescription = "Logo App",
+                    // Logo de Huerto Hogar (asumiendo que se llama 'logo' en drawable)
+                    painter = painterResource(id = R.drawable.logo),
+                    contentDescription = "Logo Huerto Hogar",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(140.dp),
@@ -119,7 +105,7 @@ fun LoginScreen(
                     Spacer(Modifier.height(8.dp))
                     Text(
                         text = state.mensaje,
-                        color = Color.Red,
+                        color = MaterialTheme.colorScheme.error, // Color de error del tema
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -129,16 +115,17 @@ fun LoginScreen(
                 Button(
                     onClick = {
                         vm.submit { nombreUsuario ->
-                            navController.navigate("home/$nombreUsuario") {
+                            navController.navigate("pantalla_principal/$nombreUsuario") {
                                 popUpTo("login") { inclusive = true }
                             }
                         }
                     },
                     enabled = !state.isLoading,
                     shape = RoundedCornerShape(12.dp),
+                    // Colores del tema (Botón primario)
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = pastelAccent,
-                        contentColor = pastelText
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary
                     ),
                     modifier = Modifier
                         .fillMaxWidth(0.7f)
@@ -152,9 +139,9 @@ fun LoginScreen(
                 Text(
                     text = "Registrarse",
                     modifier = Modifier.clickable {
-                        navController.navigate("registro")
+                        navController.navigate("registro") // Asumiendo que la ruta es "registro"
                     },
-                    color = Color.Blue,
+                    color = MaterialTheme.colorScheme.primary, // Color de acento
                     fontWeight = FontWeight.Bold
                 )
             }
@@ -166,5 +153,8 @@ fun LoginScreen(
 @Composable
 fun LoginScreenPreview() {
     val navController = rememberNavController()
-    LoginScreen(navController = navController)
+    val context = LocalContext.current
+    val factory = ViewModelProvider.AndroidViewModelFactory.getInstance(context.applicationContext as Application)
+    val vm: LoginViewModel = viewModel(factory = factory)
+    LoginScreen(navController = navController, vm = vm)
 }

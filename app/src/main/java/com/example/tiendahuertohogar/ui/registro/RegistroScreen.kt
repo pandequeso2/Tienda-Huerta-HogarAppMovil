@@ -1,3 +1,4 @@
+// Reemplaza TU archivo /RegistroScreen.kt con ESTE contenido completo
 package com.example.tiendahuertohogar.ui.registro
 
 

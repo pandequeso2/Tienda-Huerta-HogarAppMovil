@@ -5,14 +5,20 @@ import android.util.Patterns
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.tiendahuertohogar.data.database.AppDataBase
+import com.example.tiendahuertohogar.data.model.Usuario
+import com.example.tiendahuertohogar.data.repository.UsuarioRepository
+import com.example.tiendahuertohogar.ui.registro.RegistroUiState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.tiendahuertohogar.utils.regionesDeChile
+import com.example.tiendahuertohogar.utils.obtenerComunas
 
-class RegistroViewModel(application: Application) : AndroidViewModel(application) {
+class   RegistroViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: UsuarioRepository
 
     private val _uiState = MutableStateFlow(RegistroUiState())

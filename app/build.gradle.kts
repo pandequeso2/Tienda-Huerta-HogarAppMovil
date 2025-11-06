@@ -105,7 +105,18 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    // AÑADIR PARA Arreglar "Unresolved reference 'coil'" en PerfilScreen.kt
+    implementation("io.coil-kt:coil-compose:2.6.0")
+
+// AÑADIR PARA Arreglar "Unresolved reference 'accompanist'" en TomarFotoScreen.kt
+    implementation("com.google.accompanist:accompanist-permissions:0.34.0")
+
+// AÑADIR PARA Arreglar "Property delegate must have a 'getValue'..." en RegistroScreen.kt
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.2")
+
 }
+
 
 // El bloque Kapt se mantiene porque Room lo necesita
 kapt {

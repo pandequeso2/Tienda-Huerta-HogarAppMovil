@@ -29,9 +29,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import com.example.proyectologin006d_final.R
-import com.example.proyectologin006d_final.data.model.Usuario
-import com.example.proyectologin006d_final.util.SessionManager
+import com.example.tiendahuertohogar.R
+import com.example.tiendahuertohogar.data.model.Usuario
+import com.example.tiendahuertohogar.utils.SessionManager
 
 @Composable
 fun PerfilScreen(mainNavController: NavController) {
