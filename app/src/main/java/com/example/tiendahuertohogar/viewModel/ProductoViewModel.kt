@@ -1,4 +1,4 @@
-package com.example.tiendahuertohogar.viewmodel // O 'viewModel' si es minúscula
+package com.example.tiendahuertohogar.viewModel // O 'viewModel' si es minúscula
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.tiendahuertohogar.data.model.Producto

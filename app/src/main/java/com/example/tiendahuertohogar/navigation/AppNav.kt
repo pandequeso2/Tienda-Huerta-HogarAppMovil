@@ -10,7 +10,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
-import androidx.lifecycle.viewmodel.compose.viewModel // <-- IMPORTACIÓN CLAVE 1
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -19,20 +19,20 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.tiendahuertohogar.ui.login.LoginScreen
 import com.example.tiendahuertohogar.ui.login.LoginViewModel
-import com.example.tiendahuertohogar.ui.registro.RegistroScreen // Importa RegistroScreen
+import com.example.tiendahuertohogar.ui.registro.RegistroScreen
 import com.example.tiendahuertohogar.utils.CameraPermissionHelper
 import com.example.tiendahuertohogar.view.MainScreen
 import com.example.tiendahuertohogar.view.ProductoFormScreen
+import com.example.tiendahuertohogar.view.QrScannerScreen // <-- IMPORTACIÓN AÑADIDA
 import com.example.tiendahuertohogar.viewModel.CartViewModel
-
-// <-- IMPORTACIÓN CLAVE 2
+import com.example.tiendahuertohogar.viewModel.QrViewModel // <-- IMPORTACIÓN AÑADIDA
 
 object AppRoutes {
     const val LOGIN = "login"
     const val PANTALLA_PRINCIPAL = "pantalla_principal"
     const val PRODUCTO_FORM = "producto_form"
     const val QR_SCANNER = "qr_scanner"
-    const val REGISTRO = "registro" // Define la ruta de registro
+    const val REGISTRO = "registro"
 }
 
 @Composable
@@ -45,6 +45,7 @@ fun AppNav(
         mutableStateOf(CameraPermissionHelper.hasCameraPermission(context))
     }
 
+    // Este es el lanzador de permisos que ya tenías
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
@@ -62,7 +63,7 @@ fun AppNav(
             val loginViewModel: LoginViewModel = viewModel()
             LoginScreen(
                 navController = navController,
-                vm = loginViewModel // Tu LoginScreen SÍ espera este parámetro 'vm'
+                vm = loginViewModel
             )
         }
 
@@ -71,9 +72,6 @@ fun AppNav(
             arguments = listOf(navArgument("username") { type = NavType.StringType })
         ) { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username").orEmpty()
-
-            // CORREGIDO: Llama a viewModel<CartViewModel>()
-            // Las importaciones de arriba solucionan todos los errores aquí
             MainScreen(
                 mainNavController = navController,
                 username = username,
@@ -81,17 +79,24 @@ fun AppNav(
             )
         }
 
-        composable(
-            route = AppRoutes.PRODUCTO_FORM
-        ) {
-            // ProductoFormScreen usa un viewModel por defecto,
-            // no necesita parámetros
+        composable(AppRoutes.PRODUCTO_FORM) {
             ProductoFormScreen()
         }
 
-        // AÑADIDO: La ruta para la pantalla de Registro
         composable(AppRoutes.REGISTRO) {
             RegistroScreen(navController = navController)
+        }
+
+        // --- RUTA AÑADIDA PARA EL ESCÁNER QR ---
+        composable(AppRoutes.QR_SCANNER) {
+            val qrViewModel: QrViewModel = viewModel()
+            QrScannerScreen(
+                viewModel = qrViewModel,
+                hasCameraPermission = hasCameraPermission,
+                onRequestPermission = {
+                    requestPermissionLauncher.launch(Manifest.permission.CAMERA)
+                }
+            )
         }
     }
 }

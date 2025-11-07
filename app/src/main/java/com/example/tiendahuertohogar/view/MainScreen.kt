@@ -10,6 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.QrCodeScanner
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,8 +24,9 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.tiendahuertohogar.navigation.BottomNavigationBar // Asumiendo que estos existen
-import com.example.tiendahuertohogar.navigation.BottomNavItem       // y están correctos
+import com.example.tiendahuertohogar.navigation.AppRoutes
+import com.example.tiendahuertohogar.navigation.BottomNavigationBar
+import com.example.tiendahuertohogar.navigation.BottomNavItem
 import com.example.tiendahuertohogar.ui.perfil.PerfilScreen
 import com.example.tiendahuertohogar.ui.producto.ProductsScreen
 import com.example.tiendahuertohogar.viewModel.CartViewModel
@@ -43,6 +45,16 @@ fun MainScreen(
             TopAppBar(
                 title = { SearchBar() },
                 actions = {
+                    // --- BOTÓN AÑADIDO PARA EL ESCÁNER QR ---
+                    IconButton(onClick = {
+                        // Navega a la ruta del escáner en el NavController principal
+                        mainNavController.navigate(AppRoutes.QR_SCANNER)
+                    }) {
+                        Icon(
+                            Icons.Outlined.QrCodeScanner,
+                            contentDescription = "Escanear QR"
+                        )
+                    }
                     IconButton(onClick = { /* TODO: Lista de deseos */ }) {
                         Icon(Icons.Default.FavoriteBorder, contentDescription = "Lista de Deseos")
                     }
@@ -50,7 +62,6 @@ fun MainScreen(
                         Icon(Icons.Default.ShoppingCart, contentDescription = "Carrito de Compras")
                     }
                 },
-                // Color primario del tema (VerdeEsmeralda) [cite: 152]
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary,
@@ -115,21 +126,16 @@ fun HomeScreenContent(username: String) {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            // Color de fondo del tema (BlancoSuave) [cite: 149]
             .background(MaterialTheme.colorScheme.background)
     ) {
         item {
             StoreInfoSection(modifier = Modifier.padding(vertical = 16.dp))
         }
 
-        // --- CONTENIDO DE PASTELERÍA ELIMINADO ---
-        // Se ha quitado ProductCarousel y FeaturedProducts de pasteles.
-        // Aquí se debería añadir el contenido de Huerto Hogar (p.ej. Categorías)
-
         item {
             Card(
                 shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant), // GrisClaro
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 12.dp, vertical = 16.dp)
@@ -138,22 +144,21 @@ fun HomeScreenContent(username: String) {
                     Text(
                         text = "Sobre Nosotros",
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.tertiary, // MarronClaro [cite: 154]
+                        color = MaterialTheme.colorScheme.tertiary,
                         fontWeight = FontWeight.Bold
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        // Texto actualizado al de Huerto Hogar [cite: 86]
                         text = "HuertoHogar es una tienda online dedicada a llevar la frescura y calidad de los productos del campo directamente a la puerta de nuestros clientes en Chile.",
                         style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurface // GrisOscuro [cite: 166]
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
             }
         }
         item {
             Text(
-                text = "@ 2025 Huerto Hogar", // Actualizado
+                text = "@ 2025 Huerto Hogar",
                 style = MaterialTheme.typography.bodySmall,
                 color = Color.Gray,
                 modifier = Modifier
@@ -168,13 +173,11 @@ fun HomeScreenContent(username: String) {
 @Composable
 fun StoreInfoSection(modifier: Modifier = Modifier) {
     val context = LocalContext.current
-    // Texto principal (GrisOscuro) [cite: 166]
     val textColor = MaterialTheme.colorScheme.onBackground
     val storeOptions = listOf(
-        // Ubicaciones del PDF [cite: 141]
         Triple(Icons.Default.LocationOn, "Tiendas", "geo:0,0?q=Santiago, Puerto Montt, Villarica, Nacimiento, Viña del Mar, Valparaíso, y Concepción"),
-        Triple(Icons.Default.Phone, "Llámanos", "tel:+56912345678"), // Teléfono de ejemplo
-        Triple(Icons.Default.Share, "Redes", "https://www.instagram.com") // RRSS de ejemplo
+        Triple(Icons.Default.Phone, "Llámanos", "tel:+56912345678"),
+        Triple(Icons.Default.Share, "Redes", "https://www.instagram.com")
     )
 
     Row(

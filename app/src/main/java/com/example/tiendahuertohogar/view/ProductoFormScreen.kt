@@ -31,7 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.tiendahuertohogar.data.model.Producto
-import com.example.tiendahuertohogar.viewmodel.ProductoViewModel
+import com.example.tiendahuertohogar.viewModel.ProductoViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
