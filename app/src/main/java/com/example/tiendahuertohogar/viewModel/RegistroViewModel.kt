@@ -5,7 +5,7 @@ import android.util.Patterns
 import android.widget.Toast
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tiendahuertohogar.data.database.AppDataBase
+import com.example.tiendahuertohogar.data.database.BaseDeDatos
 import com.example.tiendahuertohogar.data.model.Usuario
 import com.example.tiendahuertohogar.data.repository.UsuarioRepository
 import com.example.tiendahuertohogar.ui.registro.RegistroUiState
@@ -28,7 +28,7 @@ class   RegistroViewModel(application: Application) : AndroidViewModel(applicati
     val comunas: StateFlow<List<String>> = MutableStateFlow(emptyList())
 
     init {
-        val usuarioDao = AppDataBase.getDatabase(application).usuarioDao()
+        val usuarioDao = BaseDeDatos.getDatabase(application).usuarioDao()
         repository = UsuarioRepository(usuarioDao)
     }
 

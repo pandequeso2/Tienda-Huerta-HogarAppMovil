@@ -9,20 +9,20 @@ import com.example.tiendahuertohogar.data.model.Producto
 import com.example.tiendahuertohogar.data.model.Usuario
 
 @Database(entities = [Producto::class, Usuario::class], version = 2, exportSchema = false)
-abstract class AppDataBase : RoomDatabase() {
+abstract class BaseDeDatos : RoomDatabase() {
 
     abstract fun productoDao(): ProductoDao
     abstract fun usuarioDao(): UsuarioDao
 
     companion object {
         @Volatile
-        private var INSTANCE: AppDataBase? = null
+        private var INSTANCE: BaseDeDatos? = null
 
-        fun getDatabase(context: Context): AppDataBase {
+        fun getDatabase(context: Context): BaseDeDatos {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
-                    AppDataBase::class.java,
+                    BaseDeDatos::class.java,
                     "app_database"
                 )
                     // Permite a Room recrear las tablas si se actualiza la versión de la BD.

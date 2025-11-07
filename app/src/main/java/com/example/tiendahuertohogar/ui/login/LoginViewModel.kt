@@ -7,7 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.viewModelScope
-import com.example.tiendahuertohogar.data.database.AppDataBase
+import com.example.tiendahuertohogar.data.database.BaseDeDatos
 import com.example.tiendahuertohogar.data.repository.UsuarioRepository
 import com.example.tiendahuertohogar.utils.SessionManager
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +18,7 @@ class LoginViewModel(application: Application) : AndroidViewModel(application) {
     private val repository: UsuarioRepository
 
     init {
-        val usuarioDao = AppDataBase.getDatabase(application).usuarioDao()
+        val usuarioDao = BaseDeDatos.getDatabase(application).usuarioDao()
         repository = UsuarioRepository(usuarioDao)
     }
 

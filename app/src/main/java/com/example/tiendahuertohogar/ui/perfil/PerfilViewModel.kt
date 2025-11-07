@@ -6,7 +6,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.tiendahuertohogar.data.database.AppDataBase
+import com.example.tiendahuertohogar.data.database.BaseDeDatos
 import com.example.tiendahuertohogar.data.model.Usuario
 import com.example.tiendahuertohogar.data.repository.UsuarioRepository
 import com.example.tiendahuertohogar.utils.SessionManager
@@ -26,7 +26,7 @@ class PerfilViewModel(application: Application) : AndroidViewModel(application) 
     val photoUri: StateFlow<Uri?> = _photoUri.asStateFlow()
 
     init {
-        val usuarioDao = AppDataBase.getDatabase(application).usuarioDao()
+        val usuarioDao = BaseDeDatos.getDatabase(application).usuarioDao()
         repository = UsuarioRepository(usuarioDao)
         loadUserProfile()
     }
