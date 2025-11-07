@@ -4,6 +4,7 @@ package com.example.tiendahuertohogar.ui.registro
 
 import android.app.DatePickerDialog
 import android.widget.DatePicker
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -33,15 +34,11 @@ import java.util.*
 @Composable
 fun RegistroScreen(
     navController: NavController,
-    // Arquitectura: La vista recibe el ViewModel, que centraliza la lógica.
+
     registroViewModel: RegistroViewModel = viewModel()
 ) {
     // Gestión de Estado: La UI consume el estado (uiState) del ViewModel.
     val uiState by registroViewModel.uiState.collectAsState()
-
-    val pastelBackground = Color(0xFFFFF8F0)
-    val pastelAccent = Color(0xFFFFCCBC)
-    val pastelText = Color(0xFF5D4037)
 
     // Navegación basada en estado: Reacciona a un cambio en el estado para navegar.
     LaunchedEffect(uiState.registroExitoso) {
@@ -55,7 +52,11 @@ fun RegistroScreen(
             CenterAlignedTopAppBar(
                 title = { Text("Formulario de Registro") },
                 navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.Filled.ArrowBack, "Volver") } },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = pastelAccent)
+                // CORREGIDO: Usa el color primario del tema (VerdeEsmeralda) [cite: 152]
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                )
             )
         }
     ) { innerPadding ->
@@ -64,7 +65,9 @@ fun RegistroScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(rememberScrollState())
+                // CORREGIDO: Usa el color de fondo del tema (BlancoSuave)
+                .background(MaterialTheme.colorScheme.background),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(24.dp))
@@ -152,7 +155,11 @@ fun RegistroScreen(
                 onClick = { registroViewModel.registrarUsuario() },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = !uiState.isLoading,
-                colors = ButtonDefaults.buttonColors(containerColor = pastelAccent)
+                // CORREGIDO: Usa el color primario del tema (VerdeEsmeralda) [cite: 152]
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary
+                )
             ) {
                 if (uiState.isLoading) {
                     CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)

@@ -36,14 +36,10 @@ import com.example.tiendahuertohogar.utils.SessionManager
 @Composable
 fun PerfilScreen(mainNavController: NavController) {
     val viewModel: PerfilViewModel = viewModel()
-
-    // Gestión de estado: La UI consume el estado del ViewModel.
     val usuario by viewModel.user.collectAsStateWithLifecycle()
     val photoUri by viewModel.photoUri.collectAsStateWithLifecycle()
 
     val navBackStackEntry = mainNavController.currentBackStackEntry
-
-    // Recurso Nativo: Escucha el resultado de la cámara.
     LaunchedEffect(navBackStackEntry) {
         val uri = navBackStackEntry?.savedStateHandle?.get<Uri>("photo_uri")
         uri?.let {
@@ -55,7 +51,8 @@ fun PerfilScreen(mainNavController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFFF8F0)),
+            // CORREGIDO: Usa el color de fondo del tema (BlancoSuave)
+            .background(MaterialTheme.colorScheme.background),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         ProfileHeader(
@@ -83,7 +80,8 @@ fun ProfileHeader(usuario: Usuario?, photoUri: Uri?, onImageClick: () -> Unit) {
         modifier = Modifier
             .size(120.dp)
             .clip(CircleShape)
-            .background(Color.LightGray)
+            // CORREGIDO: Usa un color del tema
+            .background(MaterialTheme.colorScheme.surfaceVariant)
             .clickable(onClick = onImageClick),
         contentAlignment = Alignment.Center
     ) {
@@ -109,7 +107,8 @@ fun ProfileHeader(usuario: Usuario?, photoUri: Uri?, onImageClick: () -> Unit) {
     Text(
         text = usuario?.correo ?: "Cargando correo...",
         fontSize = 16.sp,
-        color = Color.Gray
+        // CORREGIDO: Usa un color del tema (GrisMedio)
+        color = MaterialTheme.colorScheme.onSurfaceVariant
     )
 }
 
@@ -148,14 +147,16 @@ fun UserInfoRow(icon: ImageVector, label: String, value: String) {
         Icon(
             imageVector = icon,
             contentDescription = label,
-            tint = Color.Gray
+            // CORREGIDO: Usa un color del tema (GrisMedio)
+            tint = MaterialTheme.colorScheme.onSurfaceVariant
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Text(
                 text = label,
                 fontSize = 12.sp,
-                color = Color.Gray
+                // CORREGIDO: Usa un color del tema (GrisMedio)
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
             Text(
                 text = value,
@@ -174,15 +175,14 @@ fun LogoutButton(navController: NavController) {
     Button(
         onClick = {
             SessionManager.clearSession(context)
-            // Navegación segura: Limpia la pila para que no se pueda volver.
             navController.navigate("login") { popUpTo(0) }
         },
         modifier = Modifier
             .fillMaxWidth()
             .padding(16.dp),
         colors = ButtonDefaults.buttonColors(
-            containerColor = Color(0xFFE57373),
-            contentColor = Color.White
+            containerColor = MaterialTheme.colorScheme.error,
+            contentColor = MaterialTheme.colorScheme.onError
         ),
         shape = RoundedCornerShape(12.dp)
     ) {
