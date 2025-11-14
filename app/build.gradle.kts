@@ -82,7 +82,7 @@ dependencies {
     kapt("androidx.room:room-compiler:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")
 
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2") // ¡Esta es la línea que falta!
+    //implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.2") // ¡Esta es la línea que falta!
 
     // --- CAMERAX ---
     val cameraxVersion = "1.3.3"
@@ -98,6 +98,22 @@ dependencies {
 
     // --- DATASTORE ---
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+
+
+
+
+    // Retrofit y Gson Converter
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+// Corrutinas para trabajo asincrónico
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+
+    // Jetpack Compose
+    //implementation("androidx.activity:activity-compose:1.9.0")
+    //implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
+
 
     // --- DESUGARING (PARA COMPATIBILIDAD CON APIS DE JAVA 8+) ---
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
@@ -117,12 +133,9 @@ dependencies {
     implementation("com.google.accompanist:accompanist-permissions:0.34.0")
 
 // AÑADIR PARA Arreglar "Property delegate must have a 'getValue'..." en RegistroScreen.kt
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.2")
+ //   implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.2")
+
 
 }
-
 
 // El bloque Kapt se mantiene porque Room lo necesita
-kapt {
-    correctErrorTypes = true
-}
