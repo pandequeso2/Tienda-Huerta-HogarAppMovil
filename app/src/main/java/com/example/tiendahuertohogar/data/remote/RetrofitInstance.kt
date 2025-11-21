@@ -1,5 +1,4 @@
-package com.example.tiendahuertohogar.remote
-import com.example.tiendahuertohogar.remote.ApiService
+package com.example.tiendahuertohogar.data.remote
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 

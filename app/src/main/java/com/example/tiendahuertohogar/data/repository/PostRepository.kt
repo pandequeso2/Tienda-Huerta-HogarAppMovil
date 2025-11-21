@@ -1,7 +1,7 @@
 package com.example.tiendahuertohogar.data.repository
 
 import com.example.tiendahuertohogar.data.model.Post
-import com.example.tiendahuertohogar.remote.RetrofitInstance
+import com.example.tiendahuertohogar.data.remote.RetrofitInstance
 
 
 // Este repositorio se encarga de acceder a los datos usando Retrofit

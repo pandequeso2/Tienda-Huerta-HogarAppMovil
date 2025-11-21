@@ -1,4 +1,4 @@
-package com.example.tiendahuertohogar.remote
+package com.example.tiendahuertohogar.data.remote
 
 import com.example.tiendahuertohogar.data.model.Post
 import retrofit2.http.GET
