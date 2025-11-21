@@ -1,11 +1,16 @@
 package com.example.tiendahuertohogar.view
 
+import kotlinx.coroutines.delay
 import android.content.Intent
 import android.net.Uri
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
@@ -16,20 +21,29 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.lerp
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.tiendahuertohogar.R
 import com.example.tiendahuertohogar.navigation.AppRoutes
 import com.example.tiendahuertohogar.navigation.BottomNavigationBar
 import com.example.tiendahuertohogar.navigation.BottomNavItem
 import com.example.tiendahuertohogar.ui.perfil.PerfilScreen
 import com.example.tiendahuertohogar.ui.producto.ProductsScreen
 import com.example.tiendahuertohogar.viewModel.CartViewModel
+import kotlin.math.absoluteValue
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,9 +59,8 @@ fun MainScreen(
             TopAppBar(
                 title = { SearchBar() },
                 actions = {
-                    // --- BOTÓN AÑADIDO PARA EL ESCÁNER QR ---
+                    // Botón para el escáner QR
                     IconButton(onClick = {
-                        // Navega a la ruta del escáner en el NavController principal
                         mainNavController.navigate(AppRoutes.QR_SCANNER)
                     }) {
                         Icon(
@@ -55,6 +68,14 @@ fun MainScreen(
                             contentDescription = "Escanear QR"
                         )
                     }
+
+                    // --- NUEVO BOTÓN PARA VER LA API (POSTS) ---
+                    IconButton(onClick = {
+                        mainNavController.navigate(AppRoutes.POSTS)
+                    }) {
+                        Icon(Icons.Default.List, contentDescription = "Ver API Posts")
+                    }
+
                     IconButton(onClick = { /* TODO: Lista de deseos */ }) {
                         Icon(Icons.Default.FavoriteBorder, contentDescription = "Lista de Deseos")
                     }
@@ -76,7 +97,10 @@ fun MainScreen(
         NavHost(
             navController = bottomNavController,
             startDestination = BottomNavItem.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            // Animaciones de transición entre pestañas
+            enterTransition = { fadeIn(animationSpec = tween(300)) },
+            exitTransition = { fadeOut(animationSpec = tween(300)) }
         ) {
             composable(BottomNavItem.Home.route) {
                 HomeScreenContent(username = username)
@@ -90,6 +114,7 @@ fun MainScreen(
         }
     }
 }
+
 @Composable
 fun SearchBar() {
     var text by remember { mutableStateOf("") }
@@ -130,6 +155,11 @@ fun HomeScreenContent(username: String) {
     ) {
         item {
             StoreInfoSection(modifier = Modifier.padding(vertical = 16.dp))
+        }
+
+        // Aquí se llama al Carrusel
+        item {
+            CarruselDestacados()
         }
 
         item {
@@ -196,6 +226,90 @@ fun StoreInfoSection(modifier: Modifier = Modifier) {
                 Icon(imageVector = icon, contentDescription = text, tint = textColor, modifier = Modifier.size(24.dp))
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(text = text, style = MaterialTheme.typography.bodySmall, color = textColor)
+            }
+        }
+    }
+}
+
+// Esta función debe tener @Composable y @OptIn para funcionar correctamente
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+fun CarruselDestacados() {
+    // Lista de imágenes
+    val imagenes = listOf(
+        R.drawable.manzana_fuji,
+        R.drawable.naranja,
+        R.drawable.platano,
+        R.drawable.miel
+    )
+
+    // Estado del Pager
+    val pagerState = rememberPagerState(pageCount = { imagenes.size })
+
+    // --- LÓGICA DE AUTO-SCROLL AÑADIDA ---
+    LaunchedEffect(Unit) {
+        while (true) {
+            delay(3000) // Espera 3000 milisegundos (3 segundos)
+
+            // Calcula la siguiente página
+            val nextPage = (pagerState.currentPage + 1) % imagenes.size
+
+            // Realiza la animación de desplazamiento
+            pagerState.animateScrollToPage(nextPage)
+        }
+    }
+    // -------------------------------------
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Text(
+            text = "Ofertas del Día",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(all = 16.dp),
+            color = MaterialTheme.colorScheme.tertiary
+        )
+
+        HorizontalPager(
+            state = pagerState,
+            contentPadding = PaddingValues(horizontal = 32.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(200.dp)
+        ) { page ->
+            // Animación de escala al deslizar (Efecto Zoom)
+            Card(
+                modifier = Modifier
+                    .graphicsLayer {
+                        val pageOffset = (
+                                (pagerState.currentPage - page) + pagerState
+                                    .currentPageOffsetFraction
+                                ).absoluteValue
+
+                        lerp(
+                            start = 0.85f,
+                            stop = 1f,
+                            fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                        ).also { scale ->
+                            scaleX = scale
+                            scaleY = scale
+                        }
+
+                        alpha = lerp(
+                            start = 0.5f,
+                            stop = 1f,
+                            fraction = 1f - pageOffset.coerceIn(0f, 1f)
+                        )
+                    }
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                shape = RoundedCornerShape(16.dp),
+                elevation = CardDefaults.cardElevation(8.dp)
+            ) {
+                Image(
+                    painter = painterResource(id = imagenes[page]),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize()
+                )
             }
         }
     }

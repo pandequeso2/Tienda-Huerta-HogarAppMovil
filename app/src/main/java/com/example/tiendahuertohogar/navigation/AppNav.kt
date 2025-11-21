@@ -23,9 +23,13 @@ import com.example.tiendahuertohogar.ui.registro.RegistroScreen
 import com.example.tiendahuertohogar.utils.CameraPermissionHelper
 import com.example.tiendahuertohogar.view.MainScreen
 import com.example.tiendahuertohogar.view.ProductoFormScreen
-import com.example.tiendahuertohogar.view.QrScannerScreen // <-- IMPORTACIÓN AÑADIDA
+import com.example.tiendahuertohogar.view.QrScannerScreen
 import com.example.tiendahuertohogar.viewModel.CartViewModel
-import com.example.tiendahuertohogar.viewModel.QrViewModel // <-- IMPORTACIÓN AÑADIDA
+import com.example.tiendahuertohogar.viewModel.QrViewModel
+// --- IMPORTS NUEVOS ---
+import com.example.tiendahuertohogar.ui.screens.PostScreen
+import com.example.tiendahuertohogar.viewModel.PostViewModel
+import com.example.tiendahuertohogar.ui.theme.ApiRestTheme
 
 object AppRoutes {
     const val LOGIN = "login"
@@ -33,6 +37,7 @@ object AppRoutes {
     const val PRODUCTO_FORM = "producto_form"
     const val QR_SCANNER = "qr_scanner"
     const val REGISTRO = "registro"
+    const val POSTS = "posts" // <--- 1. NUEVA RUTA AGREGADA
 }
 
 @Composable
@@ -87,7 +92,6 @@ fun AppNav(
             RegistroScreen(navController = navController)
         }
 
-        // --- RUTA AÑADIDA PARA EL ESCÁNER QR ---
         composable(AppRoutes.QR_SCANNER) {
             val qrViewModel: QrViewModel = viewModel()
             QrScannerScreen(
@@ -97,6 +101,15 @@ fun AppNav(
                     requestPermissionLauncher.launch(Manifest.permission.CAMERA)
                 }
             )
+        }
+
+        // --- 2. COMPOSABLE AÑADIDO PARA LA PANTALLA DE POSTS ---
+        composable(AppRoutes.POSTS) {
+            val postViewModel: PostViewModel = viewModel()
+            // Envolvemos en ApiRestTheme para mantener el estilo de esa pantalla
+            ApiRestTheme {
+                PostScreen(viewModel = postViewModel)
+            }
         }
     }
 }

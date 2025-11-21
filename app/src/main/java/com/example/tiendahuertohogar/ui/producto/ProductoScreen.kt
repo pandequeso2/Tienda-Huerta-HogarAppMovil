@@ -1,19 +1,41 @@
 package com.example.tiendahuertohogar.ui.producto
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ShoppingCart
-import androidx.compose.material3.*
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -23,8 +45,7 @@ import androidx.compose.ui.unit.sp
 import com.example.tiendahuertohogar.R
 import com.example.tiendahuertohogar.data.model.Producto
 import com.example.tiendahuertohogar.viewModel.CartViewModel
-
-
+import kotlinx.coroutines.delay
 @Composable
 fun ProductsScreen(cartViewModel: CartViewModel) {
     Box(
@@ -39,87 +60,106 @@ fun ProductsScreen(cartViewModel: CartViewModel) {
 
 @Composable
 fun ProductList(cartViewModel: CartViewModel) {
-    // --- LISTA DE PRODUCTOS ACTUALIZADA SEGÚN EL PDF ---
-    // (Idealmente, esto vendría de un ViewModel y la BD)
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        delay(2000)
+        isLoading = false
+    }
+
     val listarProducto = listOf(
         Producto(
             id = 1,
-            codigo = "FR001", // [cite: 199]
-            categoria = "Frutas Frescas", // [cite: 194]
-            nombre = "Manzanas Fuji", // [cite: 199]
-            precio = 1200, // [cite: 240]
-            descripcion = "Manzanas Fuji crujientes y dulces, cultivadas en el Valle del Maule.", // [cite: 242]
+            codigo = "FR001",
+            categoria = "Frutas Frescas",
+            nombre = "Manzanas Fuji",
+            precio = 1200,
+            descripcion = "Manzanas Fuji crujientes y dulces, cultivadas en el Valle del Maule.",
             personalizable = false,
-            imagenResId = R.drawable.manzana_fuji // Imagen subida
+            imagenResId = R.drawable.manzana_fuji
         ),
         Producto(
             id = 2,
-            codigo = "FR002", // [cite: 200]
-            categoria = "Frutas Frescas", // [cite: 194]
-            nombre = "Naranjas Valencia", // [cite: 200]
-            precio = 1000, // [cite: 245]
-            descripcion = "Jugosas y ricas en vitamina C, ideales para zumos frescos.", // [cite: 247]
+            codigo = "FR002",
+            categoria = "Frutas Frescas",
+            nombre = "Naranjas Valencia",
+            precio = 1000,
+            descripcion = "Jugosas y ricas en vitamina C, ideales para zumos frescos.",
             personalizable = false,
-            imagenResId = R.drawable.naranja // Imagen subida
+            imagenResId = R.drawable.naranja
         ),
         Producto(
             id = 3,
-            codigo = "FR003", // [cite: 201]
-            categoria = "Frutas Frescas", // [cite: 194]
-            nombre = "Plátanos Cavendish", // [cite: 201]
-            precio = 800, // [cite: 250]
-            descripcion = "Plátanos maduros y dulces, perfectos para el desayuno.", // [cite: 252]
+            codigo = "FR003",
+            categoria = "Frutas Frescas",
+            nombre = "Plátanos Cavendish",
+            precio = 800,
+            descripcion = "Plátanos maduros y dulces, perfectos para el desayuno.",
             personalizable = false,
-            imagenResId = R.drawable.platano // Imagen subida
+            imagenResId = R.drawable.platano
         ),
         Producto(
             id = 4,
-            codigo = "VR001", // [cite: 202]
-            categoria = "Verduras Orgánicas", // [cite: 195]
-            nombre = "Zanahorias Orgánicas", // [cite: 202]
-            precio = 900, // [cite: 259]
-            descripcion = "Zanahorias crujientes cultivadas sin pesticidas.", // [cite: 261]
+            codigo = "VR001",
+            categoria = "Verduras Orgánicas",
+            nombre = "Zanahorias Orgánicas",
+            precio = 900,
+            descripcion = "Zanahorias crujientes cultivadas sin pesticidas.",
             personalizable = false,
-            imagenResId = R.drawable.zanahoria // Imagen subida
+            imagenResId = R.drawable.zanahoria
         ),
         Producto(
             id = 5,
-            codigo = "VR002", // [cite: 203]
-            categoria = "Verduras Orgánicas", // [cite: 195]
-            nombre = "Espinacas Frescas", // [cite: 203]
-            precio = 700, // [cite: 264]
-            descripcion = "Espinacas frescas y nutritivas, perfectas para ensaladas.", // [cite: 266]
+            codigo = "VR002",
+            categoria = "Verduras Orgánicas",
+            nombre = "Espinacas Frescas",
+            precio = 700,
+            descripcion = "Espinacas frescas y nutritivas, perfectas para ensaladas.",
             personalizable = false,
-            imagenResId = R.drawable.espinaca // Imagen subida
+            imagenResId = R.drawable.espinaca
         ),
         Producto(
             id = 6,
-            codigo = "VR003", // [cite: 204]
-            categoria = "Verduras Orgánicas", // [cite: 195]
-            nombre = "Pimientos Tricolores", // [cite: 204]
-            precio = 1500, // [cite: 270]
-            descripcion = "Pimientos rojos, amarillos y verdes, ideales para salteados.", // [cite: 272]
+            codigo = "VR003",
+            categoria = "Verduras Orgánicas",
+            nombre = "Pimientos Tricolores",
+            precio = 1500,
+            descripcion = "Pimientos rojos, amarillos y verdes, ideales para salteados.",
             personalizable = false,
-            imagenResId = R.drawable.pimiento // Imagen subida
+            imagenResId = R.drawable.pimiento
         ),
         Producto(
             id = 7,
-            codigo = "PO001", // [cite: 206]
-            categoria = "Productos Orgánicos", // [cite: 196]
-            nombre = "Miel Orgánica", // [cite: 206]
-            precio = 5000, // [cite: 279]
-            descripcion = "Miel pura y orgánica producida por apicultores locales.", // [cite: 281]
+            codigo = "PO001",
+            categoria = "Productos Orgánicos",
+            nombre = "Miel Orgánica",
+            precio = 5000,
+            descripcion = "Miel pura y orgánica producida por apicultores locales.",
             personalizable = false,
-            imagenResId = R.drawable.miel // Imagen subida
+            imagenResId = R.drawable.miel
         )
     )
 
-    LazyColumn(
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    ) {
-        items(listarProducto) { producto ->
-            ProductCard(producto = producto, cartViewModel = cartViewModel)
+    AnimatedContent(
+        targetState = isLoading,
+        label = "listTransition"
+    ) { loading ->
+        if (loading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+        } else {
+            LazyColumn(
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                items(listarProducto) { producto ->
+                    ProductCard(producto = producto, cartViewModel = cartViewModel)
+                }
+            }
         }
     }
 }
@@ -127,12 +167,23 @@ fun ProductList(cartViewModel: CartViewModel) {
 @Composable
 fun ProductCard(producto: Producto, cartViewModel: CartViewModel) {
     val context = LocalContext.current
+    var isPressed by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 1.2f else 1f,
+        label = "scaleAnimation"
+    )
+
+    LaunchedEffect(isPressed) {
+        if (isPressed) {
+            kotlinx.coroutines.delay(150)
+            isPressed = false
+        }
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-        // Usa el color de superficie (BlancoNieve) del tema
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
     ) {
         Column {
@@ -149,15 +200,15 @@ fun ProductCard(producto: Producto, cartViewModel: CartViewModel) {
                 Column {
                     Text(
                         text = producto.nombre,
-                        style = MaterialTheme.typography.titleLarge, // Tipografía del tema
+                        style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.tertiary // Color MarronClaro [cite: 154]
+                        color = MaterialTheme.colorScheme.tertiary
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = producto.descripcion,
-                        style = MaterialTheme.typography.bodyMedium, // Tipografía del tema
-                        color = MaterialTheme.colorScheme.onSurfaceVariant // Color GrisMedio [cite: 168]
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
@@ -165,21 +216,28 @@ fun ProductCard(producto: Producto, cartViewModel: CartViewModel) {
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 18.sp,
-                        color = MaterialTheme.colorScheme.onSurface // Color GrisOscuro [cite: 166]
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
 
                 IconButton(
                     onClick = {
+                        isPressed = true
                         cartViewModel.addToCart(producto)
-                        Toast.makeText(context, "${producto.nombre} añadido al carrito", Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            "${producto.nombre} añadido al carrito",
+                            Toast.LENGTH_SHORT
+                        ).show()
                     },
-                    modifier = Modifier.align(Alignment.BottomEnd)
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .graphicsLayer(scaleX = scale, scaleY = scale)
                 ) {
                     Icon(
                         imageVector = Icons.Default.ShoppingCart,
                         contentDescription = "Añadir al carrito",
-                        tint = MaterialTheme.colorScheme.primary // Color VerdeEsmeralda [cite: 152]
+                        tint = MaterialTheme.colorScheme.primary
                     )
                 }
             }
