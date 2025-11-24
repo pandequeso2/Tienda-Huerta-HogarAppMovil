@@ -1,6 +1,7 @@
 package com.example.tiendahuertohogar.view
 
-
+import android.content.Intent // <--- NUEVO IMPORT
+import android.net.Uri        // <--- NUEVO IMPORT
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.*
@@ -124,7 +125,33 @@ fun QrScannerScreen(
                         modifier = Modifier.padding(16.dp)
                     )
                 }
+
                 Spacer(Modifier.height(16.dp))
+
+                // --- INICIO DE LA MODIFICACIÓN ---
+                // Verificamos si es un enlace web para mostrar el botón de ir
+                val contenido = qrResult!!.content
+                if (contenido.startsWith("http://") || contenido.startsWith("https://")) {
+                    Button(
+                        onClick = {
+                            try {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(contenido))
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "No se pudo abrir el enlace", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text("Ir al sitio web")
+                    }
+                    Spacer(Modifier.height(8.dp))
+                }
+                // --- FIN DE LA MODIFICACIÓN ---
+
                 Button(
                     onClick = {
                         viewModel.clearResult()
