@@ -12,7 +12,7 @@ data class Producto(
     val codigo: String,
     val categoria: String,
     val nombre: String,
-    val precio: Int,
+    val precio: Double,
     val descripcion: String,
     val personalizable: Boolean,
     val imagenResId: Int = 0

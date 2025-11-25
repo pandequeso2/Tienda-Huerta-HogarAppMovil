@@ -31,12 +31,6 @@ import com.example.tiendahuertohogar.ui.screens.PostScreen
 import com.example.tiendahuertohogar.viewModel.PostViewModel
 import com.example.tiendahuertohogar.ui.theme.ApiRestTheme
 
-// --- IMPORTANTE: Asegúrate de importar tu pantalla de Carrito ---
-// Si el archivo está en 'ui/screens', el import se verá así:
-// import com.example.tiendahuertohogar.ui.screens.CarritoScreen
-// O si aún no tienes el package definido, tal vez sea:
-// import com.example.tiendahuertohogar.view.CarritoScreen
-
 object AppRoutes {
     const val LOGIN = "login"
     const val PANTALLA_PRINCIPAL = "pantalla_principal"
@@ -44,7 +38,7 @@ object AppRoutes {
     const val QR_SCANNER = "qr_scanner"
     const val REGISTRO = "registro"
     const val POSTS = "posts"
-    const val CARRITO = "carrito" // <--- 1. NUEVA RUTA AGREGADA
+    const val CARRITO = "carrito"
 }
 
 @Composable
@@ -52,6 +46,9 @@ fun AppNav(
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
+
+    // 📢 INSTANCIACIÓN ÚNICA DEL CARTVIEWMODEL
+    val cartViewModel: CartViewModel = viewModel()
 
     var hasCameraPermission by rememberSaveable {
         mutableStateOf(CameraPermissionHelper.hasCameraPermission(context))
@@ -83,10 +80,11 @@ fun AppNav(
             arguments = listOf(navArgument("username") { type = NavType.StringType })
         ) { backStackEntry ->
             val username = backStackEntry.arguments?.getString("username").orEmpty()
+
             MainScreen(
                 mainNavController = navController,
                 username = username,
-                cartViewModel = viewModel<CartViewModel>()
+                cartViewModel = cartViewModel
             )
         }
 
@@ -116,17 +114,24 @@ fun AppNav(
             }
         }
 
-        // --- 2. COMPOSABLE AÑADIDO PARA EL CARRITO ---
+        // --- CORRECCIÓN AQUÍ ---
         composable(AppRoutes.CARRITO) {
-            // Aquí llamamos a tu pantalla CarritoScreen.
-            // Si usas CarritoManager directamente como vimos antes:
+            // Opción A: Si CarritoScreen solo pide el click de checkout
             CarritoScreen(
                 onCheckoutClick = {
                     Toast.makeText(context, "Procesando compra...", Toast.LENGTH_SHORT).show()
-                    // Aquí podrías navegar a una pantalla de pago real o limpiar el carrito
-                    // navController.navigate("pago")
+                    // navController.navigate("pago") // Navegar si tienes pantalla de pago
                 }
             )
+
+            // Opción B: Si modificaste CarritoScreen para recibir el ViewModel,
+            // y se llama 'cartViewModel', descomenta la siguiente línea y borra la anterior:
+            /*
+            CarritoScreen(
+                 cartViewModel = cartViewModel, // Asegúrate que el parámetro se llame así en CarritoScreen
+                 onCheckoutClick = { ... }
+            )
+            */
         }
     }
 }

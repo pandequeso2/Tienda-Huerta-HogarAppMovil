@@ -16,7 +16,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.tiendahuertohogar.manager.CarritoManager
-import com.example.tiendahuertohogar.data.model.CartItem
+import com.example.tiendahuertohogar.data.model.ItemCarrito
 
 @Composable
 fun CarritoScreen(
@@ -95,7 +95,7 @@ fun CarritoScreen(
 
 @Composable
 fun CartItemRow(
-    item: CartItem,
+    item: ItemCarrito,
     onRemove: () -> Unit,
     onAdd: () -> Unit,
     onDecrease: () -> Unit

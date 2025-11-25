@@ -1,6 +1,5 @@
 package com.example.tiendahuertohogar.view
 
-
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,11 +35,9 @@ import com.example.tiendahuertohogar.viewModel.ProductoViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoFormScreen(
-    // Eliminé los parámetros que no se necesitan,
-    // ya que este formulario es para crear un producto nuevo.
     viewModel: ProductoViewModel = viewModel()
 ) {
-    // Estados para los campos del formulario. Es mejor usar String directamente.
+    // Estados para los campos del formulario
     var codigo by remember { mutableStateOf("") }
     var categoria by remember { mutableStateOf("") }
     var nombre by remember { mutableStateOf("") }
@@ -108,14 +105,15 @@ fun ProductoFormScreen(
 
         Button(
             onClick = {
-                val precioInt = precio.toIntOrNull() ?: 0 // Convertir precio a Int
+                // CAMBIO REALIZADO: Convertir a Double
+                val precioDouble = precio.toDoubleOrNull() ?: 0.0
+
                 val producto = Producto(
-                    // id se genera automáticamente, no lo incluimos aquí
                     id = 0,
                     codigo = codigo,
                     categoria = categoria,
                     nombre = nombre,
-                    precio = precioInt,
+                    precio = precioDouble, // Asignamos el Double
                     descripcion = descripcion,
                     personalizable = personalizable
                 )
@@ -129,7 +127,7 @@ fun ProductoFormScreen(
                 descripcion = ""
                 personalizable = false
             },
-            // El botón se activa solo si los campos importantes no están vacíos
+            // Validación básica para habilitar el botón
             enabled = nombre.isNotBlank() && precio.isNotBlank() && categoria.isNotBlank()
         ) {
             Text("Guardar Producto")
@@ -163,7 +161,6 @@ fun ProductoFormScreen(
         }
     }
 }
-
 
 @Preview(showBackground = true)
 @Composable

@@ -1,12 +1,14 @@
 package com.example.tiendahuertohogar.data.model
 
 import com.example.tiendahuertohogar.data.model.Producto
-data class CartItem(
-    // Asumo que tu clase Producto ya existe, y la usaremos como base.
+
+data class ItemCarrito(
     val producto: Producto,
-    var cantidad: Int = 1
+    // La cantidad puede ser Int, ¡está perfecto!
+    val cantidad: Int
 ) {
-    // Función para calcular el subtotal de este ítem
-    val subtotal: Int
-        get() = producto.precio * cantidad
+    // CAMBIO CLAVE: El subtotal debe ser Double para mayor precisión.
+    val subtotal: Double
+        // 1. Convertimos el precio del producto a Double para la multiplicación.
+        get() = producto.precio.toDouble() * cantidad
 }

@@ -73,7 +73,7 @@ fun ProductList(cartViewModel: CartViewModel) {
             codigo = "FR001",
             categoria = "Frutas Frescas",
             nombre = "Manzanas Fuji",
-            precio = 1200,
+            precio = 1200.00,
             descripcion = "Manzanas Fuji crujientes y dulces, cultivadas en el Valle del Maule.",
             personalizable = false,
             imagenResId = R.drawable.manzana_fuji
@@ -83,7 +83,7 @@ fun ProductList(cartViewModel: CartViewModel) {
             codigo = "FR002",
             categoria = "Frutas Frescas",
             nombre = "Naranjas Valencia",
-            precio = 1000,
+            precio = 1000.00,
             descripcion = "Jugosas y ricas en vitamina C, ideales para zumos frescos.",
             personalizable = false,
             imagenResId = R.drawable.naranja
@@ -93,7 +93,7 @@ fun ProductList(cartViewModel: CartViewModel) {
             codigo = "FR003",
             categoria = "Frutas Frescas",
             nombre = "Plátanos Cavendish",
-            precio = 800,
+            precio = 800.00,
             descripcion = "Plátanos maduros y dulces, perfectos para el desayuno.",
             personalizable = false,
             imagenResId = R.drawable.platano
@@ -103,7 +103,7 @@ fun ProductList(cartViewModel: CartViewModel) {
             codigo = "VR001",
             categoria = "Verduras Orgánicas",
             nombre = "Zanahorias Orgánicas",
-            precio = 900,
+            precio = 900.00,
             descripcion = "Zanahorias crujientes cultivadas sin pesticidas.",
             personalizable = false,
             imagenResId = R.drawable.zanahoria
@@ -113,7 +113,7 @@ fun ProductList(cartViewModel: CartViewModel) {
             codigo = "VR002",
             categoria = "Verduras Orgánicas",
             nombre = "Espinacas Frescas",
-            precio = 700,
+            precio = 700.00,
             descripcion = "Espinacas frescas y nutritivas, perfectas para ensaladas.",
             personalizable = false,
             imagenResId = R.drawable.espinaca
@@ -123,7 +123,7 @@ fun ProductList(cartViewModel: CartViewModel) {
             codigo = "VR003",
             categoria = "Verduras Orgánicas",
             nombre = "Pimientos Tricolores",
-            precio = 1500,
+            precio = 1500.00,
             descripcion = "Pimientos rojos, amarillos y verdes, ideales para salteados.",
             personalizable = false,
             imagenResId = R.drawable.pimiento
@@ -133,7 +133,7 @@ fun ProductList(cartViewModel: CartViewModel) {
             codigo = "PO001",
             categoria = "Productos Orgánicos",
             nombre = "Miel Orgánica",
-            precio = 5000,
+            precio = 5000.00,
             descripcion = "Miel pura y orgánica producida por apicultores locales.",
             personalizable = false,
             imagenResId = R.drawable.miel
