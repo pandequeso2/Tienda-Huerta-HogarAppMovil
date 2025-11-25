@@ -17,6 +17,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.tiendahuertohogar.ui.Carrito.CarritoScreen
 import com.example.tiendahuertohogar.ui.login.LoginScreen
 import com.example.tiendahuertohogar.ui.login.LoginViewModel
 import com.example.tiendahuertohogar.ui.registro.RegistroScreen
@@ -26,10 +27,15 @@ import com.example.tiendahuertohogar.view.ProductoFormScreen
 import com.example.tiendahuertohogar.view.QrScannerScreen
 import com.example.tiendahuertohogar.viewModel.CartViewModel
 import com.example.tiendahuertohogar.viewModel.QrViewModel
-// --- IMPORTS NUEVOS ---
 import com.example.tiendahuertohogar.ui.screens.PostScreen
 import com.example.tiendahuertohogar.viewModel.PostViewModel
 import com.example.tiendahuertohogar.ui.theme.ApiRestTheme
+
+// --- IMPORTANTE: Asegúrate de importar tu pantalla de Carrito ---
+// Si el archivo está en 'ui/screens', el import se verá así:
+// import com.example.tiendahuertohogar.ui.screens.CarritoScreen
+// O si aún no tienes el package definido, tal vez sea:
+// import com.example.tiendahuertohogar.view.CarritoScreen
 
 object AppRoutes {
     const val LOGIN = "login"
@@ -37,7 +43,8 @@ object AppRoutes {
     const val PRODUCTO_FORM = "producto_form"
     const val QR_SCANNER = "qr_scanner"
     const val REGISTRO = "registro"
-    const val POSTS = "posts" // <--- 1. NUEVA RUTA AGREGADA
+    const val POSTS = "posts"
+    const val CARRITO = "carrito" // <--- 1. NUEVA RUTA AGREGADA
 }
 
 @Composable
@@ -50,7 +57,6 @@ fun AppNav(
         mutableStateOf(CameraPermissionHelper.hasCameraPermission(context))
     }
 
-    // Este es el lanzador de permisos que ya tenías
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission(),
         onResult = { isGranted ->
@@ -103,13 +109,24 @@ fun AppNav(
             )
         }
 
-        // --- 2. COMPOSABLE AÑADIDO PARA LA PANTALLA DE POSTS ---
         composable(AppRoutes.POSTS) {
             val postViewModel: PostViewModel = viewModel()
-            // Envolvemos en ApiRestTheme para mantener el estilo de esa pantalla
             ApiRestTheme {
                 PostScreen(viewModel = postViewModel)
             }
+        }
+
+        // --- 2. COMPOSABLE AÑADIDO PARA EL CARRITO ---
+        composable(AppRoutes.CARRITO) {
+            // Aquí llamamos a tu pantalla CarritoScreen.
+            // Si usas CarritoManager directamente como vimos antes:
+            CarritoScreen(
+                onCheckoutClick = {
+                    Toast.makeText(context, "Procesando compra...", Toast.LENGTH_SHORT).show()
+                    // Aquí podrías navegar a una pantalla de pago real o limpiar el carrito
+                    // navController.navigate("pago")
+                }
+            )
         }
     }
 }
