@@ -11,13 +11,12 @@
 //--------------------------------------------------------------------------------------
 
 
-package com.example.tiendahuertohogar.viewmodel
+package com.example.tiendahuertohogar.viewModel
 
 
 
 // Importa el modelo de datos Post
 import com.example.tiendahuertohogar.data.model.Post
-import com.example.tiendahuertohogar.viewModel.PostViewModel
 // Importa los dispatchers de corrutinas
 import kotlinx.coroutines.Dispatchers
 // Importa la anotación para APIs experimentales de corrutinas

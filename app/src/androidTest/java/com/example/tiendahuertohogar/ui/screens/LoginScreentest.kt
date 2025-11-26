@@ -1,11 +1,13 @@
 package com.example.tiendahuertohogar.ui.screens
 
-
+import android.app.Application // <--- IMPORT ADDED
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.junit4.createComposeRule
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performTextInput
 import androidx.navigation.compose.rememberNavController
+import androidx.test.core.app.ApplicationProvider // <--- IMPORT ADDED
 import com.example.tiendahuertohogar.ui.login.LoginScreen
 import com.example.tiendahuertohogar.ui.login.LoginViewModel
 import org.junit.Rule
@@ -13,45 +15,36 @@ import org.junit.Test
 
 class LoginScreenTest {
 
-    // Regla necesaria para pruebas de Compose
     @get:Rule
     val composeTestRule = createComposeRule()
 
     @Test
     fun verificarElementosVisiblesEnLogin() {
-        // GIVEN: Cargamos la pantalla de Login
         composeTestRule.setContent {
             val navController = rememberNavController()
-            // Instanciamos un ViewModel simple (asegúrate que LoginViewModel tenga constructor vacío o mockealo)
-            val viewModel = LoginViewModel()
+            val viewModel = LoginViewModel(ApplicationProvider.getApplicationContext() as Application)
 
-            LoginScreen(
-                navController = navController,
-                vm = viewModel
-            )
+            LoginScreen(navController, viewModel)
         }
 
-        // THEN: Verificamos que los textos clave existen en pantalla
-        // Ajusta estos textos EXACTAMENTE como aparecen en tu app
-        composeTestRule.onNodeWithText("Iniciar Sesión").assertIsDisplayed()
-        composeTestRule.onNodeWithText("Usuario").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Iniciar sesión").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Correo").assertIsDisplayed()
         composeTestRule.onNodeWithText("Contraseña").assertIsDisplayed()
     }
 
     @Test
     fun verificarIngresoDeTextoEnLogin() {
-        // GIVEN: Pantalla cargada
         composeTestRule.setContent {
             val navController = rememberNavController()
-            LoginScreen(navController = navController, vm = LoginViewModel())
+            val viewModel = LoginViewModel(ApplicationProvider.getApplicationContext() as Application)
+
+            LoginScreen(navController, viewModel)
         }
 
-        // WHEN: Escribimos en los campos
-        composeTestRule.onNodeWithText("Usuario").performTextInput("cliente1")
-        composeTestRule.onNodeWithText("Contraseña").performTextInput("123456")
+        composeTestRule.onNodeWithTag("inputCorreo").performTextInput("cliente1@correo.com")
+        composeTestRule.onNodeWithTag("inputClave").performTextInput("123456")
 
-        // THEN: Verificamos que el texto se escribió correctamente (el nodo ahora contiene ese texto)
-        composeTestRule.onNodeWithText("cliente1").assertIsDisplayed()
+        composeTestRule.onNodeWithText("cliente1@correo.com").assertIsDisplayed()
     }
-}
 
+}

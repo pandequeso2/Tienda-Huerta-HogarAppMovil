@@ -53,7 +53,8 @@ class ProductoFormScreenTest {
 
         // THEN: Buscamos el botón de guardar.
         // A veces el botón queda abajo si el teclado sale, usamos 'performScrollTo' por seguridad
-        composeTestRule.onNodeWithText("Guardar Producto").performScrollTo().assertIsDisplayed()
+        composeTestRule.onNodeWithText("Guardar Producto").assertIsDisplayed()
+
 
         // Opcional: Verificar que lo que escribimos está visible
         composeTestRule.onNodeWithText("Pala de Jardín").assertIsDisplayed()

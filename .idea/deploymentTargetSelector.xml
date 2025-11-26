@@ -5,13 +5,7 @@
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
-      <SelectionState runConfigName="verificarIngresoDeTextoEnLogin()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="LoginScreenTest">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
-      <SelectionState runConfigName="ProductoFormScreenTest">
+      <SelectionState runConfigName="Tests in 'com.example.tiendahuertohogar.ui.screens'">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>

@@ -3,25 +3,19 @@ package com.example.tiendahuertohogar.repository
 import com.example.tiendahuertohogar.data.dao.UsuarioDao
 import com.example.tiendahuertohogar.data.model.Usuario
 import com.example.tiendahuertohogar.data.repository.UsuarioRepository
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.shouldBe
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
-import org.junit.Test
 
-class UsuarioRepositoryTest {
+class UsuarioRepositoryTest : StringSpec({
 
-    // 1. Mockeamos el DAO
-    private val usuarioDao = mockk<UsuarioDao>()
+    val usuarioDao = mockk<UsuarioDao>()
+    val repository = UsuarioRepository(usuarioDao)
 
-    // 2. Instanciamos el repositorio inyectando el mock
-    private val repository = UsuarioRepository(usuarioDao)
-
-    @Test
-    fun `insertarUsuario llama al metodo correcto del DAO`() = runTest {
-        // GIVEN: Un usuario de prueba con TUS campos reales
+    "insertarUsuario() debe llamar al método correcto del DAO" {
         val nuevoUsuario = Usuario(
             id = 1,
             nombreCompleto = "Juan Perez",
@@ -35,25 +29,22 @@ class UsuarioRepositoryTest {
             codigoDescuento = null
         )
 
-        // Simulamos que el DAO no hace nada al insertar (retorna Unit)
         coEvery { usuarioDao.insertarUsuario(any()) } returns Unit
 
-        // WHEN: Llamamos al repositorio
-        repository.insertarUsuario(nuevoUsuario)
+        runTest {
+            repository.insertarUsuario(nuevoUsuario)
 
-        // THEN: Verificamos que el repositorio le pasó el usuario al DAO
-        coVerify(exactly = 1) { usuarioDao.insertarUsuario(nuevoUsuario) }
+            coVerify(exactly = 1) { usuarioDao.insertarUsuario(nuevoUsuario) }
+        }
     }
 
-    @Test
-    fun `buscarUsuario devuelve el usuario cuando las credenciales son correctas`() = runTest {
-        // GIVEN: Datos de prueba
+    "buscarUsuario() debe retornar el usuario cuando las credenciales son correctas" {
         val correo = "juan@test.com"
         val pass = "123456"
 
         val usuarioEsperado = Usuario(
             id = 1,
-            nombreCompleto = "Juan Perez", // Usando nombreCompleto
+            nombreCompleto = "Juan Perez",
             fechaNacimiento = "01/01/1990",
             correo = correo,
             contrasena = pass,
@@ -64,31 +55,26 @@ class UsuarioRepositoryTest {
             codigoDescuento = null
         )
 
-        // Simulamos que el DAO encuentra al usuario
-        // Nota: Verifica que tu DAO tenga un método con esta firma. Si se llama 'login', cámbialo aquí.
         coEvery { usuarioDao.findUserByEmailAndPassword(correo, pass) } returns usuarioEsperado
 
-        // WHEN: Buscamos en el repositorio
-        val resultado = repository.buscarUsuario(correo, pass)
+        runTest {
+            val resultado = repository.buscarUsuario(correo, pass)
 
-        // THEN: El resultado debe ser el usuario esperado
-        assertEquals(usuarioEsperado, resultado)
-        assertEquals("Juan Perez", resultado?.nombreCompleto)
+            resultado shouldBe usuarioEsperado
+            resultado?.nombreCompleto shouldBe "Juan Perez"
+        }
     }
 
-    @Test
-    fun `buscarUsuario devuelve null cuando las credenciales son incorrectas`() = runTest {
-        // GIVEN: Credenciales que no existen
+    "buscarUsuario() debe retornar null cuando las credenciales son incorrectas" {
         val correo = "falso@test.com"
         val pass = "erronea"
 
-        // Simulamos que el DAO devuelve null (no encontró nada)
         coEvery { usuarioDao.findUserByEmailAndPassword(correo, pass) } returns null
 
-        // WHEN: Buscamos en el repositorio
-        val resultado = repository.buscarUsuario(correo, pass)
+        runTest {
+            val resultado = repository.buscarUsuario(correo, pass)
 
-        // THEN: El resultado debe ser null
-        assertNull(resultado)
+            resultado shouldBe null
+        }
     }
-}
+})

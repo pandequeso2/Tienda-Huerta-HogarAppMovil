@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -84,7 +85,9 @@ fun LoginScreen(
                     onValueChange = vm::onCorreoChange,
                     label = { Text("Correo") },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth(0.95f)
+                    modifier = Modifier
+                        .fillMaxWidth(0.95f)
+                        .testTag("inputCorreo")
                 )
 
                 OutlinedTextField(
@@ -93,13 +96,11 @@ fun LoginScreen(
                     label = { Text("Contraseña") },
                     singleLine = true,
                     visualTransformation = if (showPass) VisualTransformation.None else PasswordVisualTransformation(),
-                    trailingIcon = {
-                        TextButton(onClick = { showPass = !showPass }) {
-                            Text(if (showPass) "Ocultar" else "Ver")
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(0.95f)
+                    modifier = Modifier
+                        .fillMaxWidth(0.95f)
+                        .testTag("inputClave")
                 )
+
 
                 if (state.mensaje.isNotEmpty()) {
                     Spacer(Modifier.height(8.dp))
