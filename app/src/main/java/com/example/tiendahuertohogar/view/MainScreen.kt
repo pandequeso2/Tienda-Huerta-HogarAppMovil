@@ -34,7 +34,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.tiendahuertohogar.R
-import com.example.tiendahuertohogar.navigation.AppRoutes
+import com.example.tiendahuertohogar.navigation.AppRoutes // ¡Importante! Necesitamos las rutas
 import com.example.tiendahuertohogar.navigation.BottomNavigationBar
 import com.example.tiendahuertohogar.navigation.BottomNavItem
 import com.example.tiendahuertohogar.ui.perfil.PerfilScreen
@@ -59,6 +59,18 @@ fun MainScreen(
             TopAppBar(
                 title = { SearchBar() },
                 actions = {
+
+                    // --- 📢 NUEVO BOTÓN: NAVEGAR A PRODUCTO FORM ---
+                    IconButton(onClick = {
+                        mainNavController.navigate(AppRoutes.PRODUCTO_FORM)
+                    }) {
+                        Icon(
+                            Icons.Default.Add,
+                            contentDescription = "Agregar Nuevo Producto"
+                        )
+                    }
+                    // ------------------------------------------------
+
                     // Botón para el escáner QR
                     IconButton(onClick = {
                         mainNavController.navigate(AppRoutes.QR_SCANNER)

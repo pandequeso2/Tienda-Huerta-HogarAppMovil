@@ -1,73 +1,81 @@
-package com.example.tiendahuertohogar.viewmodel
+package com.example.tiendahuertohogar.repository
 
+import com.example.tiendahuertohogar.data.dao.ProductoDao // Importa tu DAO
+import com.example.tiendahuertohogar.data.repository.ProductoRepository // Importa tu Repositorio
 import com.example.tiendahuertohogar.data.model.Producto
-import com.example.tiendahuertohogar.viewModel.ProductoViewModel
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.shouldBe
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.mockk // Necesitas mockk para simular el DAO
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.advanceUntilIdle
-import kotlinx.coroutines.test.resetMain
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.setMain
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
-class ProductoViewModelTest {
+class ProductoRepositoryTest : StringSpec({
 
-    private val testDispatcher = UnconfinedTestDispatcher()
+    val testDispatcher = StandardTestDispatcher()
 
-    @BeforeEach
-    fun setUp() {
+    // 1. Mockeamos la única dependencia que pide el constructor (ProductoDao)
+    val mockProductoDao = mockk<ProductoDao>(relaxed = true)
+
+    // 2. Instanciamos el Repositorio, inyectando el mock. (Esto resuelve el error de compilación)
+    val repository = ProductoRepository(productoDao = mockProductoDao)
+
+    // Configuración del dispatcher para las coroutines
+    beforeSpec {
         Dispatchers.setMain(testDispatcher)
     }
 
-    @AfterEach
-    fun tearDown() {
+    afterSpec {
         Dispatchers.resetMain()
     }
 
-    @Test
-    fun `estado inicial de productos es una lista vacia`() = runTest(testDispatcher) {
-        // GIVEN: Instanciamos el ViewModel
-        val viewModel = ProductoViewModel()
+    // Data dummy de prueba
+    val dummyProducto = Producto(
+        id = 1, codigo = "A001", categoria = "Hogar",
+        nombre = "Mesa", precio = 50000.0,
+        descripcion = "Mesa de madera", personalizable = false, imagenResId = 0
+    )
 
-        // WHEN: Consultamos el valor inicial
-        val listaActual = viewModel.productos.value
+    // -------------------------------------------------------------------
 
-        // THEN: Debería estar vacía
-        assertEquals(0, listaActual.size)
+    "insertarProducto llama al método insertarProducto del DAO" {
+        runTest(testDispatcher) {
+
+            // 📢 1. Definimos qué debe pasar cuando se llama al método del DAO
+            // Usamos coEvery porque la función 'insertarProducto' es suspend.
+            coEvery { mockProductoDao.insertarProducto(dummyProducto) } returns Unit
+
+            // 📢 2. Ejecutamos la función del Repositorio
+            repository.insertarProducto(dummyProducto)
+
+            // 📢 3. Verificamos que el Repositorio haya llamado al DAO
+            coVerify(exactly = 1) { mockProductoDao.insertarProducto(dummyProducto) }
+        }
     }
 
-    @Test
-    fun `guardarProducto agrega correctamente un producto a la lista`() = runTest(testDispatcher) {
-        // GIVEN: El ViewModel y un producto de prueba
-        val viewModel = ProductoViewModel()
+    "obtenerProductos devuelve el Flow de la lista que entrega el DAO" {
+        runTest(testDispatcher) {
+            val listaProductos = listOf(dummyProducto)
 
-        val nuevoProducto = Producto(
-            id = 1,
-            codigo = "A001",
-            categoria = "Hogar",
-            nombre = "Mesa",
-            precio = 50000.0,
-            descripcion = "Mesa de madera",
-            personalizable = false,
-            imagenResId = 0
-        )
+            // 📢 1. Definimos qué debe devolver el DAO (un Flow)
+            coEvery { mockProductoDao.obtenerProductos() } returns flowOf(listaProductos)
 
-        // WHEN: Llamamos a la función guardarProducto
-        viewModel.guardarProducto(nuevoProducto)
+            // 📢 2. Ejecutamos la función y obtenemos el primer valor del Flow
+            val result = repository.obtenerProductos().first()
 
-        // Esperamos a que termine la corrutina
-        advanceUntilIdle()
-
-        // THEN: Verificamos que la lista ahora tenga 1 elemento
-        val listaActual = viewModel.productos.value
-
-        assertEquals(1, listaActual.size)
-        assertEquals("Mesa", listaActual[0].nombre)
-        assertEquals(nuevoProducto, listaActual[0])
+            // 📢 3. Verificamos el resultado
+            result shouldBe listaProductos
+        }
     }
-}
+
+    // Puedes seguir con tests para obtenerProductoPorId y eliminarProducto...
+
+})

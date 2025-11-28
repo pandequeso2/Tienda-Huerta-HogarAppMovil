@@ -1,7 +1,9 @@
-package com.example.tiendahuertohogar.viewModel  // 'viewmodel' en minúscula
+package com.example.tiendahuertohogar.viewmodel
+// ✅ Todo minúscula
 
 import com.example.tiendahuertohogar.data.model.Producto
 import com.example.tiendahuertohogar.viewModel.ProductoViewModel
+// ... otras importaciones
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +28,7 @@ class ProductoViewModelTest : StringSpec({
     }
 
     "estado inicial de productos es una lista vacia" {
+        // En este test, la inicialización es síncrona, no es necesario el dispatcher.
         val viewModel = ProductoViewModel()
         val listaActual = viewModel.productos.value
         listaActual.size shouldBe 0
@@ -33,7 +36,9 @@ class ProductoViewModelTest : StringSpec({
 
     "guardarProducto agrega correctamente un producto a la lista" {
         runTest(testDispatcher) {
-            val viewModel = ProductoViewModel()
+
+            // 📢 CAMBIO CLAVE AQUÍ: INYECTAMOS EL DISPATCHER DE PRUEBA
+            val viewModel = ProductoViewModel(dispatcher = testDispatcher)
 
             val nuevoProducto = Producto(
                 id = 1,
@@ -47,6 +52,8 @@ class ProductoViewModelTest : StringSpec({
             )
 
             viewModel.guardarProducto(nuevoProducto)
+
+            // 📢 Esto forzará la finalización de la coroutine que lanzaste.
             advanceUntilIdle()
 
             val listaActual = viewModel.productos.value
