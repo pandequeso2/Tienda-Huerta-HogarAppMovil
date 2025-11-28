@@ -13,7 +13,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider // <-- Usamos HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -29,14 +29,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.example.tiendahuertohogar.data.model.Producto
+import com.example.tiendahuertohogar.data.repository.ProductoRepository // ¡Importación necesaria!
+import com.example.tiendahuertohogar.data.dao.ProductoDao // Importación ficticia para Preview
 import com.example.tiendahuertohogar.viewModel.ProductoViewModel
+import com.example.tiendahuertohogar.viewModel.ProductoViewModelFactory // ¡Importación de la Factoría!
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoFormScreen(
-    viewModel: ProductoViewModel = viewModel()
+    // 📢 AHORA RECIBE EL REPOSITORIO Y EL NAVCONTROLLER
+    repository: ProductoRepository,
+    navController: NavController
 ) {
+    // 1. INSTANCIAMOS LA FACTORÍA Y EL VIEWMODEL
+    val factory = remember {
+        ProductoViewModelFactory(repository)
+    }
+    val viewModel: ProductoViewModel = viewModel(factory = factory)
+    // ----------------------------------------------------
+
     // Estados para los campos del formulario
     var codigo by remember { mutableStateOf("") }
     var categoria by remember { mutableStateOf("") }
@@ -45,7 +60,7 @@ fun ProductoFormScreen(
     var descripcion by remember { mutableStateOf("") }
     var personalizable by remember { mutableStateOf(false) }
 
-    // Observar la lista de productos del ViewModel
+    // Observar la lista de productos del ViewModel (ahora viene de la BBDD)
     val productos by viewModel.productos.collectAsState()
 
     Column(
@@ -105,18 +120,20 @@ fun ProductoFormScreen(
 
         Button(
             onClick = {
-                // CAMBIO REALIZADO: Convertir a Double
                 val precioDouble = precio.toDoubleOrNull() ?: 0.0
 
+                // El ID se deja en 0, Room lo asignará automáticamente
                 val producto = Producto(
                     id = 0,
                     codigo = codigo,
                     categoria = categoria,
                     nombre = nombre,
-                    precio = precioDouble, // Asignamos el Double
+                    precio = precioDouble,
                     descripcion = descripcion,
                     personalizable = personalizable
                 )
+
+                // 📢 LLAMADA AL VIEWMODEL (guarda en la BBDD)
                 viewModel.guardarProducto(producto)
 
                 // Limpiar formulario
@@ -126,6 +143,9 @@ fun ProductoFormScreen(
                 precio = ""
                 descripcion = ""
                 personalizable = false
+
+                // 📢 Volver a la pantalla anterior
+                navController.popBackStack()
             },
             // Validación básica para habilitar el botón
             enabled = nombre.isNotBlank() && precio.isNotBlank() && categoria.isNotBlank()
@@ -134,7 +154,7 @@ fun ProductoFormScreen(
         }
 
         Spacer(modifier = Modifier.height(24.dp))
-        Divider()
+        HorizontalDivider() // Usamos HorizontalDivider para evitar el warning
         Spacer(modifier = Modifier.height(16.dp))
 
         Text("Productos Registrados", style = MaterialTheme.typography.headlineSmall)
@@ -162,8 +182,15 @@ fun ProductoFormScreen(
     }
 }
 
+// ⚠️ El Preview ya no funcionará directamente porque requiere el Repositorio.
+// Necesitas crear un Mock del Repositorio para que el Preview funcione.
+// Dejamos este preview de ejemplo, sabiendo que puede fallar.
 @Preview(showBackground = true)
 @Composable
 fun PreviewProductoFormScreen() {
-    ProductoFormScreen()
+    // Ejemplo de cómo mockear el repositorio para el preview:
+    // val mockDao = object : ProductoDao { /* Implementación vacía */ }
+    // val mockRepository = ProductoRepository(mockDao)
+    // ProductoFormScreen(repository = mockRepository, navController = rememberNavController())
+    Text("Preview desactivado, requiere inyección de dependencias.")
 }

@@ -16,6 +16,9 @@ class ProductoRepository (private val productoDao: ProductoDao){
     fun obtenerProductos(): Flow<List<Producto>> {
         return productoDao.obtenerProductos()
     }
+    suspend fun actualizarProducto(producto: Producto){
+        productoDao.actualizarProducto(producto)
+    }
     fun obtenerProductoPorId(id: Int): Flow<Producto> {
         return productoDao.obtenerProductoPorId(id)
     }

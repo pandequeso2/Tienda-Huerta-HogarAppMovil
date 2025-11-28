@@ -1,10 +1,12 @@
 package com.example.tiendahuertohogar.navigation
 
 import android.Manifest
+import android.content.Context
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember // Importación crucial para remember (mantener la instancia)
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -17,6 +19,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.tiendahuertohogar.data.database.BaseDeDatos // ¡Importación necesaria!
+import com.example.tiendahuertohogar.data.repository.ProductoRepository // ¡Importación necesaria!
 import com.example.tiendahuertohogar.ui.Carrito.CarritoScreen
 import com.example.tiendahuertohogar.ui.login.LoginScreen
 import com.example.tiendahuertohogar.ui.login.LoginViewModel
@@ -46,6 +50,20 @@ fun AppNav(
     navController: NavHostController = rememberNavController()
 ) {
     val context = LocalContext.current
+
+    // =========================================================
+    // 📢 INYECCIÓN DE DEPENDENCIAS MANUAL PARA ROOM
+    // =========================================================
+    // 1. Instanciar el DAO (a través de la Base de Datos)
+    val productoDao = remember {
+        BaseDeDatos.getDatabase(context).productoDao()
+    }
+
+    // 2. Instanciar el Repositorio, pasándole el DAO
+    val productoRepository = remember {
+        ProductoRepository(productoDao = productoDao)
+    }
+    // =========================================================
 
     // 📢 INSTANCIACIÓN ÚNICA DEL CARTVIEWMODEL
     val cartViewModel: CartViewModel = viewModel()
@@ -89,7 +107,11 @@ fun AppNav(
         }
 
         composable(AppRoutes.PRODUCTO_FORM) {
-            ProductoFormScreen()
+            // 📢 CORRECCIÓN: PASAMOS EL REPOSITORIO Y EL NAVCONTROLLER
+            ProductoFormScreen(
+                repository = productoRepository,
+                navController = navController
+            )
         }
 
         composable(AppRoutes.REGISTRO) {
