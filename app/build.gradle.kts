@@ -42,9 +42,17 @@ android {
     buildFeatures {
         compose = true
     }
+
+    // 📢 BLOQUE DE CONFIGURACIÓN CLAVE PARA ARREGLAR ERROR DE MERGE
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            // 📢 Excluye los archivos de licencia duplicados que causan el error app:mergeDebugAndroidTestJavaResource
+            excludes += "META-INF/LICENSE.md"
+            excludes += "META-INF/LICENSE.txt"
+
+            excludes += "META-INF/LICENSE-notice.md"
+
         }
     }
 }
@@ -124,11 +132,18 @@ dependencies {
     // --- DESUGARING (PARA COMPATIBILIDAD CON APIS DE JAVA 8+) ---
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
+    // =========================================================
     // --- ANDROID TEST (TEST DE INSTRUMENTACIÓN) ---
+    // =========================================================
+
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation(platform("androidx.compose:compose-bom:2024.05.00"))
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
+
+    // 📢 MOCKK PARA TESTS DE INSTRUMENTACIÓN (Necesario para ProductoFormScreenTest)
+    androidTestImplementation("io.mockk:mockk-android:1.13.10")
+
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }

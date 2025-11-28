@@ -7,13 +7,13 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyColumn // Seguimos usando LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.HorizontalDivider // <-- Usamos HorizontalDivider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -32,25 +32,22 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.example.tiendahuertohogar.data.model.Producto
-import com.example.tiendahuertohogar.data.repository.ProductoRepository // ¡Importación necesaria!
-import com.example.tiendahuertohogar.data.dao.ProductoDao // Importación ficticia para Preview
+import com.example.tiendahuertohogar.data.repository.ProductoRepository
+import com.example.tiendahuertohogar.data.dao.ProductoDao
 import com.example.tiendahuertohogar.viewModel.ProductoViewModel
-import com.example.tiendahuertohogar.viewModel.ProductoViewModelFactory // ¡Importación de la Factoría!
+import com.example.tiendahuertohogar.viewModel.ProductoViewModelFactory
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProductoFormScreen(
-    // 📢 AHORA RECIBE EL REPOSITORIO Y EL NAVCONTROLLER
     repository: ProductoRepository,
     navController: NavController
 ) {
-    // 1. INSTANCIAMOS LA FACTORÍA Y EL VIEWMODEL
     val factory = remember {
         ProductoViewModelFactory(repository)
     }
     val viewModel: ProductoViewModel = viewModel(factory = factory)
-    // ----------------------------------------------------
 
     // Estados para los campos del formulario
     var codigo by remember { mutableStateOf("") }
@@ -60,137 +57,123 @@ fun ProductoFormScreen(
     var descripcion by remember { mutableStateOf("") }
     var personalizable by remember { mutableStateOf(false) }
 
-    // Observar la lista de productos del ViewModel (ahora viene de la BBDD)
+    // Observar la lista de productos
     val productos by viewModel.productos.collectAsState()
 
-    Column(
+    // 📢 CAMBIO CLAVE: Usamos LazyColumn como contenedor principal para manejar todo el scroll
+    LazyColumn( // 👈 LazyColumn ahora contiene TODO el contenido
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Registrar Nuevo Producto", style = MaterialTheme.typography.headlineMedium)
+        // --- Contenido del Formulario (Ahora dentro del LazyColumn) ---
+        item {
+            Text("Registrar Nuevo Producto", style = MaterialTheme.typography.headlineMedium)
 
-        Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // --- Formulario ---
-        OutlinedTextField(
-            value = nombre,
-            onValueChange = { nombre = it },
-            label = { Text("Nombre del Producto") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = descripcion,
-            onValueChange = { descripcion = it },
-            label = { Text("Descripción") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = precio,
-            onValueChange = { precio = it },
-            label = { Text("Precio") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = categoria,
-            onValueChange = { categoria = it },
-            label = { Text("Categoría (ej: Tortas, Galletas)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-        OutlinedTextField(
-            value = codigo,
-            onValueChange = { codigo = it },
-            label = { Text("Código/SKU") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Checkbox(
-                checked = personalizable,
-                onCheckedChange = { personalizable = it }
+            OutlinedTextField(
+                value = nombre,
+                onValueChange = { nombre = it },
+                label = { Text("Nombre del Producto") },
+                modifier = Modifier.fillMaxWidth()
             )
-            Text("Es personalizable")
-        }
+            OutlinedTextField(
+                value = descripcion,
+                onValueChange = { descripcion = it },
+                label = { Text("Descripción") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = precio,
+                onValueChange = { precio = it },
+                label = { Text("Precio") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = categoria,
+                onValueChange = { categoria = it },
+                label = { Text("Categoría (ej: Tortas, Galletas)") },
+                modifier = Modifier.fillMaxWidth()
+            )
+            OutlinedTextField(
+                value = codigo,
+                onValueChange = { codigo = it },
+                label = { Text("Código/SKU") },
+                modifier = Modifier.fillMaxWidth()
+            )
 
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Button(
-            onClick = {
-                val precioDouble = precio.toDoubleOrNull() ?: 0.0
-
-                // El ID se deja en 0, Room lo asignará automáticamente
-                val producto = Producto(
-                    id = 0,
-                    codigo = codigo,
-                    categoria = categoria,
-                    nombre = nombre,
-                    precio = precioDouble,
-                    descripcion = descripcion,
-                    personalizable = personalizable
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Checkbox(
+                    checked = personalizable,
+                    onCheckedChange = { personalizable = it }
                 )
+                Text("Es personalizable")
+            }
 
-                // 📢 LLAMADA AL VIEWMODEL (guarda en la BBDD)
-                viewModel.guardarProducto(producto)
+            Spacer(modifier = Modifier.height(16.dp))
 
-                // Limpiar formulario
-                codigo = ""
-                categoria = ""
-                nombre = ""
-                precio = ""
-                descripcion = ""
-                personalizable = false
+            Button(
+                onClick = {
+                    val precioDouble = precio.toDoubleOrNull() ?: 0.0
+                    val producto = Producto(
+                        id = 0,
+                        codigo = codigo,
+                        categoria = categoria,
+                        nombre = nombre,
+                        precio = precioDouble,
+                        descripcion = descripcion,
+                        personalizable = personalizable
+                        // Asegúrate de incluir aquí el campo 'comentario' si sigue en el Model
+                        // comentario = ""
+                    )
+                    viewModel.guardarProducto(producto)
 
-                // 📢 Volver a la pantalla anterior
-                navController.popBackStack()
-            },
-            // Validación básica para habilitar el botón
-            enabled = nombre.isNotBlank() && precio.isNotBlank() && categoria.isNotBlank()
-        ) {
-            Text("Guardar Producto")
+                    // Limpiar formulario
+                    codigo = ""
+                    categoria = ""
+                    nombre = ""
+                    precio = ""
+                    descripcion = ""
+                    personalizable = false
+                    navController.popBackStack()
+                },
+                enabled = nombre.isNotBlank() && precio.isNotBlank() && categoria.isNotBlank()
+            ) {
+                Text("Guardar Producto")
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+            HorizontalDivider()
+            Spacer(modifier = Modifier.height(16.dp))
+            Text("Productos Registrados", style = MaterialTheme.typography.headlineSmall)
         }
+        // --- FIN: Contenido del Formulario ---
 
-        Spacer(modifier = Modifier.height(24.dp))
-        HorizontalDivider() // Usamos HorizontalDivider para evitar el warning
-        Spacer(modifier = Modifier.height(16.dp))
 
-        Text("Productos Registrados", style = MaterialTheme.typography.headlineSmall)
-
-        // --- Lista de Productos ---
-        LazyColumn(modifier = Modifier.fillMaxWidth()) {
-            items(productos) { producto ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    elevation = CardDefaults.cardElevation(4.dp)
-                ) {
-                    Column(modifier = Modifier.padding(12.dp)) {
-                        Text(producto.nombre, style = MaterialTheme.typography.titleMedium)
-                        Text(producto.descripcion, style = MaterialTheme.typography.bodySmall)
-                        Text(
-                            "Precio: $${producto.precio}",
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
+        // --- Lista de Productos (Usamos items(productos) directo en LazyColumn) ---
+        items(productos) { producto ->
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 4.dp),
+                elevation = CardDefaults.cardElevation(4.dp)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(producto.nombre, style = MaterialTheme.typography.titleMedium)
+                    Text(producto.descripcion, style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        "Precio: $${producto.precio}",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
                 }
             }
         }
-    }
+    } // FIN LazyColumn
 }
 
-// ⚠️ El Preview ya no funcionará directamente porque requiere el Repositorio.
-// Necesitas crear un Mock del Repositorio para que el Preview funcione.
-// Dejamos este preview de ejemplo, sabiendo que puede fallar.
-@Preview(showBackground = true)
-@Composable
-fun PreviewProductoFormScreen() {
-    // Ejemplo de cómo mockear el repositorio para el preview:
-    // val mockDao = object : ProductoDao { /* Implementación vacía */ }
-    // val mockRepository = ProductoRepository(mockDao)
-    // ProductoFormScreen(repository = mockRepository, navController = rememberNavController())
-    Text("Preview desactivado, requiere inyección de dependencias.")
-}
+// ... (Preview)
