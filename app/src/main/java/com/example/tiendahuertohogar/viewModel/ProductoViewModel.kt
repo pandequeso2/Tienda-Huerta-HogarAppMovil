@@ -26,7 +26,7 @@ class ProductoViewModel(
         .stateIn(
             scope = viewModelScope,
             // Deja que Room maneje la subscripción de forma eficiente.
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.Eagerly,
             initialValue = emptyList()
         )
 
